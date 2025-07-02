@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>インタラクティブ・マニュアル：年会費領収書メール作成</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: A two-panel layout is chosen for optimal learning. The left "Instructions Panel" provides sequential, text-based steps, giving the user context and a sense of progress. The right "Simulator Panel" offers immediate, interactive visual feedback, showing the effect of each instruction on a mocked-up Gmail interface. This dual-panel approach separates "what to do" from "what it looks like," a proven UI pattern for training and tutorials. It turns a passive reading task into an active "click-and-see" experience, which significantly improves comprehension and retention of the workflow. The user navigates with "Next" and "Previous" buttons, ensuring a controlled, step-by-step learning process. -->
+    <!-- Visualization & Content Choices: The core of this application is not data visualization with charts, but process visualization.
+- Report Info: Entire 6-step email creation process. -> Goal: Organize/Inform. -> Viz/Presentation Method: An interactive UI simulation. -> Interaction: Users click through steps, and the simulated UI updates with highlights, popups, and text changes. -> Justification: This is the most effective way to teach a software workflow. It's more engaging than static text and safer than a live demo. -> Library/Method: HTML/CSS with Tailwind for the UI structure, and Vanilla JavaScript to manage state and dynamic updates.
+- Step Highlighting: -> Goal: Inform/Focus attention. -> Viz/Presentation Method: CSS classes for highlighting (borders, shadows). -> Interaction: Automatically applied by JS based on the current step. -> Justification: Visually guides the user to the most relevant part of the simulated interface for each step. -> Library/Method: JS and Tailwind CSS.
+-->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #FDFBF7;
+            color: #4A4A4A;
+        }
+        .calm-harmony-bg { background-color: #FDFBF7; }
+        .calm-harmony-surface { background-color: #FFFFFF; }
+        .calm-harmony-text { color: #4A4A4A; }
+        .calm-harmony-accent { background-color: #D0A98F; }
+        .calm-harmony-accent-text { color: #FFFFFF; }
+        .calm-harmony-secondary-accent { background-color: #A3B4A2; }
+        .calm-harmony-highlight-ring {
+            box-shadow: 0 0 0 3px rgba(208, 169, 143, 0.7);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        .step-card {
+            transition: all 0.3s ease-in-out;
+            border-left: 4px solid transparent;
+        }
+        .step-card.active {
+            border-left-color: #D0A98F;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .simulator-popup {
+            position: absolute;
+            z-index: 20;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.95);
+            transition: all 0.2s ease-in-out;
+        }
+        .simulator-popup.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="calm-harmony-bg">
+
+    <div id="app" class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold calm-harmony-text">インタラクティブ・マニュアル</h1>
+            <p class="text-lg text-gray-600 mt-2">年会費領収書メール作成フロー</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Left Panel: Instructions -->
+            <div class="lg:sticky top-8 self-start">
+                <div id="instructions-panel" class="calm-harmony-surface rounded-xl shadow-lg p-6 space-y-4">
+                    <!-- Step 1 -->
+                    <div id="step-1" class="step-card p-4 rounded-lg">
+                        <h3 class="font-bold text-xl mb-2"><span class="calm-harmony-secondary-accent text-white rounded-full px-3 py-1 mr-2">1</span>新規メール作成</h3>
+                        <p>Gmail画面にて画面左上の［作成］ボタンをクリックしてメールの新規作成画面を表示します。</p>
+                    </div>
+                    <!-- Step 2 -->
+                    <div id="step-2" class="step-card p-4 rounded-lg">
+                        <h3 class="font-bold text-xl mb-2"><span class="calm-harmony-secondary-accent text-white rounded-full px-3 py-1 mr-2">2</span>宛先の差し込み</h3>
+                        <p>宛先の右端にある人のアイコンから「スプレッドシートから追加」を選択し、「経理_年会費領収書入力シート」を選択します。</p>
+                    </div>
+                    <!-- Step 3 -->
+                    <div id="step-3" class="step-card p-4 rounded-lg">
+                        <h3 class="font-bold text-xl mb-2"><span class="calm-harmony-secondary-accent text-white rounded-full px-3 py-1 mr-2">3</span>スプシのリンクを設定</h3>
+                        <p>表示された画面で、メールアドレスに「@J」、名に「@C」をそれぞれスプレッドシートの列から選択します。</p>
+                    </div>
+                    <!-- Step 4 -->
+                    <div id="step-4" class="step-card p-4 rounded-lg">
+                        <h3 class="font-bold text-xl mb-2"><span class="calm-harmony-secondary-accent text-white rounded-full px-3 py-1 mr-2">4</span>テンプレートを挿入</h3>
+                        <p>メール作成画面右下の［︙］-［テンプレート］をクリックし、「【WACA事務局】2026年会費の領収書をお送りします」を選択します。</p>
+                    </div>
+                    <!-- Step 5 -->
+                    <div id="step-5" class="step-card p-4 rounded-lg">
+                        <h3 class="font-bold text-xl mb-2"><span class="calm-harmony-secondary-accent text-white rounded-full px-3 py-1 mr-2">5</span>個別情報の差し込み</h3>
+                        <p>本文内の `@C 様` や `@K` が機能していない場合、一度削除して半角で「@」を入力し直し、候補から再選択します。</p>
+                    </div>
+                    <!-- Step 6 -->
+                    <div id="step-6" class="step-card p-4 rounded-lg">
+                        <h3 class="font-bold text-xl mb-2"><span class="calm-harmony-secondary-accent text-white rounded-full px-3 py-1 mr-2">6</span>送信</h3>
+                        <p>全ての内容を確認し、問題がなければ［送信］ボタンをクリックしてメールを送信します。</p>
+                    </div>
+                </div>
+                <div class="flex justify-between mt-6">
+                    <button id="prev-btn" class="px-6 py-2 rounded-lg calm-harmony-accent calm-harmony-accent-text font-bold shadow-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">戻る</button>
+                    <button id="reset-btn" class="px-6 py-2 rounded-lg bg-gray-300 text-gray-700 font-bold shadow-md hover:bg-gray-400 transition-colors">リセット</button>
+                    <button id="next-btn" class="px-6 py-2 rounded-lg calm-harmony-accent calm-harmony-accent-text font-bold shadow-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed">次へ</button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Simulator -->
+            <div id="simulator-panel" class="min-h-[600px] calm-harmony-surface rounded-xl shadow-lg flex items-center justify-center p-4 relative overflow-hidden">
+                <!-- Gmail UI mock -->
+                <div id="gmail-compose-mock" class="w-full max-w-2xl h-full flex flex-col bg-white rounded-lg shadow-2xl">
+                    <div class="flex justify-between items-center bg-[#4A4A4A] text-white px-4 py-2 rounded-t-lg">
+                        <p class="text-sm font-medium">新規メッセージ</p>
+                        <div class="flex items-center space-x-3 text-xs"><span>─</span><span>□</span><span>✕</span></div>
+                    </div>
+                    <div class="p-4 border-b border-gray-200 text-sm">
+                        <span class="text-gray-500">差出人</span><span class="ml-4">Waca Support &lt;support@waca.associates&gt;</span>
+                    </div>
+                    <div id="to-field-container" class="p-4 border-b border-gray-200 flex items-center text-sm relative">
+                        <span class="text-gray-500">宛先</span>
+                        <div id="to-field-content" class="ml-10"></div>
+                        <div id="mail-merge-icon" class="ml-auto text-gray-500 cursor-pointer text-lg">👥</div>
+                        <!-- Popup for step 2 -->
+                        <div id="mail-merge-popup" class="simulator-popup top-14 right-4 bg-white rounded-md shadow-lg border border-gray-200 p-2 w-56">
+                            <div class="flex items-center p-2 hover:bg-gray-100 rounded">
+                                <span class="mr-3">👥</span>
+                                <span>メールへの差し込み</span>
+                                <span class="ml-auto">✓</span>
+                            </div>
+                            <div class="flex items-center p-2 bg-gray-200 rounded">
+                                <span class="mr-3">🗂️</span>
+                                <span>スプレッドシートから追加</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="subject-field-container" class="p-4 border-b border-gray-200 text-sm">
+                        <div id="subject-field-content"></div>
+                    </div>
+                    <div id="body-field-container" class="p-4 text-sm flex-grow h-64 relative">
+                        <div id="body-field-content" class="whitespace-pre-wrap"></div>
+                    </div>
+                    <div class="p-3 bg-gray-50 rounded-b-lg flex justify-between items-center">
+                        <button id="send-btn" class="bg-[#4A90E2] text-white font-bold py-2 px-6 rounded-md">送信</button>
+                        <div id="more-options-icon" class="text-gray-500 cursor-pointer text-xl">︙</div>
+                    </div>
+                </div>
+
+                 <!-- Popup for step 3 -->
+                <div id="spreadsheet-link-popup" class="simulator-popup bg-white rounded-lg shadow-xl border border-gray-200 p-6 w-[90%] max-w-md">
+                    <h3 class="text-lg font-bold mb-4">スプレッドシートのリンク設定の終了</h3>
+                    <p class="text-sm text-gray-600 mb-1">受信者の情報が含まれている列を選択してください</p>
+                    <div class="flex items-center p-2 border rounded-md bg-gray-100 text-sm mb-4">
+                        <span class="text-green-600 mr-2">📊</span>
+                        <span>経理_年会費領収書入力...</span>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm font-medium">メールアドレス*</label>
+                            <div class="mt-1 p-2 border border-purple-400 rounded-md bg-white text-sm">@J</div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-medium">名*</label>
+                                <div class="mt-1 p-2 border border-purple-400 rounded-md bg-white text-sm">@C</div>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-500">姓</label>
+                                <div class="mt-1 p-2 border border-gray-300 rounded-md bg-gray-100 text-sm text-gray-500">列を選択</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Popup for step 4 -->
+                <div id="template-popup" class="simulator-popup bottom-16 right-4 bg-white rounded-md shadow-lg border border-gray-200 p-2 w-72 text-sm">
+                    <div class="p-2 hover:bg-gray-100 rounded">テンプレートの挿入</div>
+                    <div class="p-2 bg-gray-200 rounded">【WACA事務局】2026年会費...</div>
+                    <div class="p-2 hover:bg-gray-100 rounded">下書きをテンプレートとして保存</div>
+                    <div class="p-2 hover:bg-gray-100 rounded text-red-500">テンプレートを削除</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentStep = 1;
+            const totalSteps = 6;
+
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const resetBtn = document.getElementById('reset-btn');
+
+            const toFieldContent = document.getElementById('to-field-content');
+            const subjectFieldContent = document.getElementById('subject-field-content');
+            const bodyFieldContent = document.getElementById('body-field-content');
+
+            const mailMergeIcon = document.getElementById('mail-merge-icon');
+            const moreOptionsIcon = document.getElementById('more-options-icon');
+            const sendBtn = document.getElementById('send-btn');
+            const spreadsheetLinkPopup = document.getElementById('spreadsheet-link-popup');
+            const mailMergePopup = document.getElementById('mail-merge-popup');
+            const templatePopup = document.getElementById('template-popup');
+
+            const elementsToClearHighlight = [mailMergeIcon, moreOptionsIcon, sendBtn, toFieldContent, subjectFieldContent, bodyFieldContent];
+
+            function updateUI() {
+                // Update instruction cards
+                for (let i = 1; i <= totalSteps; i++) {
+                    document.getElementById(`step-${i}`).classList.remove('active');
+                }
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+
+                // Update buttons
+                prevBtn.disabled = currentStep === 1;
+                nextBtn.disabled = currentStep === totalSteps;
+
+                // --- Reset Simulator State ---
+                elementsToClearHighlight.forEach(el => el.classList.remove('calm-harmony-highlight-ring'));
+                [spreadsheetLinkPopup, mailMergePopup, templatePopup].forEach(el => el.classList.remove('visible'));
+                toFieldContent.innerHTML = '';
+                subjectFieldContent.innerHTML = '';
+                bodyFieldContent.innerHTML = '';
+
+
+                // --- Apply State for Current Step ---
+                switch (currentStep) {
+                    case 1:
+                        // Initial state
+                        break;
+                    case 2:
+                        mailMergeIcon.classList.add('calm-harmony-highlight-ring');
+                        mailMergePopup.classList.add('visible');
+                        break;
+                    case 3:
+                        spreadsheetLinkPopup.classList.add('visible');
+                        break;
+                    case 4:
+                        toFieldContent.innerHTML = `<span class="bg-gray-200 rounded-full px-3 py-1 text-xs flex items-center">📊 経理_年会費領収書入力... <span class="ml-2">✕</span></span>`;
+                        moreOptionsIcon.classList.add('calm-harmony-highlight-ring');
+                        templatePopup.classList.add('visible');
+                        break;
+                    case 5:
+                        toFieldContent.innerHTML = `<span class="bg-gray-200 rounded-full px-3 py-1 text-xs flex items-center">📊 経理_年会費領収書入力... <span class="ml-2">✕</span></span>`;
+                        subjectFieldContent.innerHTML = `<span class="font-bold">【WACA事務局】2026年会費の領収書をお送りします</span>`;
+                        bodyFieldContent.innerHTML = `<span class="bg-yellow-200 rounded px-1">@C</span> 様\n\nお世話になっております。\nウェブ解析士協会(WACA)事務局でございます。\n\nこの度は2026年会費のお支払いをありがとうございました。\n領収書は下記のリンクよりダウンロードいただけます。\n\n<span class="bg-yellow-200 rounded px-1">@K</span>\n\n引き続きどうぞよろしくお願いいたします。\n\n領収書の宛名変更を希望される場合は、事務局までご連絡ください。`;
+                        bodyFieldContent.classList.add('calm-harmony-highlight-ring');
+                        break;
+                    case 6:
+                        toFieldContent.innerHTML = `<span class="bg-gray-200 rounded-full px-3 py-1 text-xs flex items-center">📊 経理_年会費領収書入力... <span class="ml-2">✕</span></span>`;
+                        subjectFieldContent.innerHTML = `<span class="font-bold">【WACA事務局】2026年会費の領収書をお送りします</span>`;
+                        bodyFieldContent.innerHTML = `@C 様\n\nお世話になっております。\nウェブ解析士協会(WACA)事務局でございます。\n\nこの度は2026年会費のお支払いをありがとうございました。\n領収書は下記のリンクよりダウンロードいただけます。\n\n@K\n\n引き続きどうぞよろしくお願いいたします。\n\n領収書の宛名変更を希望される場合は、事務局までご連絡ください。`;
+                        sendBtn.classList.add('calm-harmony-highlight-ring');
+                        break;
+                }
+            }
+
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    updateUI();
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 1) {
+                    currentStep--;
+                    updateUI();
+                }
+            });
+
+            resetBtn.addEventListener('click', () => {
+                currentStep = 1;
+                updateUI();
+            });
+
+            // Initial UI setup
+            updateUI();
+        });
+    </script>
+</body>
+</html>
