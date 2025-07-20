@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>無機化学反応式 攻略ガイド</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Study Palette -->
+    <!-- Application Structure Plan: このアプリケーションは、学習者を基本原理から実践的な応用へと導く、タスク指向の段階的な構造を採用しています。まず導入部（なぜ難しいのか？）から始まり、次に核心的な概念（3つの柱：酸・塩基、酸化還元、沈殿生成）、そして情報の整理（元素グループ別の系統的学習法）、最後に知識の定着（インタラクティブなクイズ）へと進みます。この流れは、一見混沌として見えるトピックを構造化され、管理しやすいものへと変えることで、利用者の自信を構築するために選ばれました。「効率的に覚える」というユーザーの目標に対し、丸暗記よりも理解を重視することで直接的に応えます。主要なインタラクションには、インタラクティブな溶解度表や元素ベースの反応検索ツールが含まれます。 -->
+    <!-- Visualization & Content Choices: Report Info: 主要な反応タイプ -> Goal: 原理を説明する -> Viz/Presentation: インタラクティブなHTMLテーブル/グリッド（溶解度）、スタイル付きリスト（イオン化傾向）。 Interaction: ユーザーがイオン/元素をクリックすると結果が動的に表示される。 Justification: これらのカスタムインタラクティブ要素は、化学のルールを直接的に探求できるため、一般的な棒グラフや円グラフよりも化学教育において直接的かつ効果的です。 | Report Info: 反応の整理 -> Goal: パターンを示す -> Viz/Presentation: 周期表を模したHTML/CSSグリッド。 Interaction: 元素グループをクリックすると、そのグループの代表的な反応が表示される。 Justification: 反応を馴染み深い周期表の構造と結びつけ、系統的な学習を強化します。 | Report Info: 知識チェック -> Goal: 学習内容を定着させる -> Viz/Presentation: HTMLフォームを用いた多肢選択式クイズ。 Interaction: ユーザーが回答を送信すると、即座にフィードバックが得られる。 Justification: アクティブリコールは記憶定着に効果的な手法として証明されています。 Library/Method: すべてのインタラクションは、軽量で高速なカスタム体験を維持するため、バニラJavaScriptで構築し、Tailwind CSSでスタイリングしています。 -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #fdfaf6;
+            color: #3a3a3a;
+        }
+        .chem-formula {
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: bold;
+        }
+        .tab-button.active {
+            background-color: #88a2b1;
+            color: white;
+            border-bottom-color: transparent;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .element-group-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(136, 162, 177, 0.7);
+        }
+        .solubility-table td {
+            transition: background-color 0.2s;
+        }
+        .solubility-table td.selected-cation, .solubility-table td.selected-anion {
+            background-color: #e0f2fe;
+        }
+        .solubility-table td:hover {
+            background-color: #f0f9ff;
+        }
+        .quiz-option:hover {
+            background-color: #eef8f5;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-[#465a65] text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold">無機化学反応式 攻略ガイド</h1>
+            <nav class="hidden md:flex space-x-4">
+                <a href="#intro" class="hover:text-[#b2dfdb] transition">はじめに</a>
+                <a href="#pillars" class="hover:text-[#b2dfdb] transition">3つの柱</a>
+                <a href="#systematic" class="hover:text-[#b2dfdb] transition">系統的学習</a>
+                <a href="#practice" class="hover:text-[#b2dfdb] transition">実践クイズ</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        
+        <section id="intro" class="mb-16 scroll-mt-20">
+            <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-[#88a2b1]">
+                <h2 class="text-2xl font-bold mb-4 text-[#465a65]">無機化学は「暗記」から「理解」へ</h2>
+                <p class="text-lg mb-4 leading-relaxed">
+                    無機化学の化学反応式は、数が多く、一見すると無関係に見えるため、多くの学習者が「ひたすら暗記するしかない」と感じがちです。しかし、それは最も効率の悪い学習法かもしれません。
+                </p>
+                <p class="leading-relaxed">
+                    実は、無機化学の反応の多くは、いくつかの基本的な原理に基づいています。このアプリケーションでは、膨大な反応式を攻略するための「考え方の武器」を提供します。丸暗記から脱却し、反応の背景にあるルールを理解することで、知識を整理し、応用力を身につけることを目指しましょう。各セクションのインタラクティブなツールを活用して、能動的に学習を進めてください。
+                </p>
+            </div>
+        </section>
+
+        <section id="pillars" class="mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2 text-[#465a65]">暗記を助ける３つの柱</h2>
+            <p class="text-center text-gray-600 mb-8">すべての反応は、これらの基本原理の組み合わせで理解できる。</p>
+            
+            <div class="flex justify-center mb-6 border-b-2 border-gray-200">
+                <button class="tab-button text-lg font-semibold py-3 px-6 rounded-t-md border-b-4 border-transparent active" onclick="showTab('acid-base')">1. 酸・塩基反応</button>
+                <button class="tab-button text-lg font-semibold py-3 px-6 rounded-t-md border-b-4 border-transparent" onclick="showTab('redox')">2. 酸化還元反応</button>
+                <button class="tab-button text-lg font-semibold py-3 px-6 rounded-t-md border-b-4 border-transparent" onclick="showTab('precipitation')">3. 沈殿生成反応</button>
+            </div>
+
+            <div id="tab-content" class="bg-white p-6 rounded-lg shadow-inner">
+                <div id="acid-base-content" class="tab-pane active">
+                    <h3 class="text-xl font-bold mb-3 text-[#54728c]">酸と塩基のダンス</h3>
+                    <p class="mb-4">最も基本的な反応の一つ。酸（<span class="chem-formula">H<sup>+</sup></span>を出す）と塩基（<span class="chem-formula">OH<sup>-</sup></span>を出す、または<span class="chem-formula">H<sup>+</sup></span>を受け取る）が反応し、塩と水を生成します（中和）。ポイントは、どの物質が酸で、どれが塩基として働くかを見極めることです。</p>
+                    <div class="bg-[#f0f4f8] p-4 rounded-lg">
+                        <p class="font-semibold">代表的な反応パターン：</p>
+                        <ul class="list-disc list-inside mt-2 space-y-2">
+                            <li><span class="font-bold">酸性酸化物 + 塩基 → 塩 + 水</span><br><span class="chem-formula text-gray-700 ml-4">CO<sub>2</sub> + 2NaOH → Na<sub>2</sub>CO<sub>3</sub> + H<sub>2</sub>O</span></li>
+                            <li><span class="font-bold">塩基性酸化物 + 酸 → 塩 + 水</span><br><span class="chem-formula text-gray-700 ml-4">CuO + 2HCl → CuCl<sub>2</sub> + H<sub>2</sub>O</span></li>
+                            <li><span class="font-bold">両性酸化物 + 強酸/強塩基 → 塩 + 水</span><br><span class="chem-formula text-gray-700 ml-4">Al<sub>2</sub>O<sub>3</sub> + 6HCl → 2AlCl<sub>3</sub> + 3H<sub>2</sub>O</span><br><span class="chem-formula text-gray-700 ml-4">Al<sub>2</sub>O<sub>3</sub> + 2NaOH + 3H<sub>2</sub>O → 2Na[Al(OH)<sub>4</sub>]</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div id="redox-content" class="tab-pane hidden">
+                    <h3 class="text-xl font-bold mb-3 text-[#54728c]">電子のキャッチボール</h3>
+                    <p class="mb-4">酸化還元反応は、原子間の電子の移動です。酸化剤が電子を奪い（還元される）、還元剤が電子を与える（酸化される）ことで反応が進行します。イオン化傾向の大小が、どちらが電子を放出しやすいかを判断する重要な手がかりになります。</p>
+                    <div class="bg-[#f0f4f8] p-4 rounded-lg">
+                        <p class="font-semibold">イオン化傾向（金属の反応しやすさ）：</p>
+                        <div class="flex flex-wrap gap-2 mt-2 text-sm">
+                            <span class="font-bold">大</span> ←
+                            <span class="bg-red-100 p-1 rounded">K</span> <span class="bg-red-100 p-1 rounded">Ca</span> <span class="bg-orange-100 p-1 rounded">Na</span> <span class="bg-orange-100 p-1 rounded">Mg</span> <span class="bg-yellow-100 p-1 rounded">Al</span> <span class="bg-yellow-100 p-1 rounded">Zn</span> <span class="bg-green-100 p-1 rounded">Fe</span> <span class="bg-green-100 p-1 rounded">Ni</span> <span class="bg-blue-100 p-1 rounded">Sn</span> <span class="bg-blue-100 p-1 rounded">Pb</span> (<span class="bg-gray-200 p-1 rounded">H</span>) <span class="bg-purple-100 p-1 rounded">Cu</span> <span class="bg-purple-100 p-1 rounded">Hg</span> <span class="bg-indigo-100 p-1 rounded">Ag</span> <span class="bg-indigo-100 p-1 rounded">Pt</span> <span class="bg-pink-100 p-1 rounded">Au</span>
+                             → <span class="font-bold">小</span>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-600">（例：亜鉛<span class="chem-formula">Zn</span>は水素<span class="chem-formula">H</span>よりイオン化傾向が大きいので、塩酸<span class="chem-formula">HCl</span>に溶けて水素を発生する）</p>
+                    </div>
+                </div>
+                <div id="precipitation-content" class="tab-pane hidden">
+                    <h3 class="text-xl font-bold mb-3 text-[#54728c]">イオンのかくれんぼ</h3>
+                    <p class="mb-4">水溶液中で特定の陽イオンと陰イオンが出会うと、水に溶けにくい塩（沈殿）を生成する反応です。どのイオンの組み合わせが沈殿を作るか、そしてその沈殿の色は何かを覚えることが重要です。下の表でイオンを選択して、生成する塩の溶解性を確認してみましょう。</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                        <div class="md:col-span-2">
+                             <table class="solubility-table w-full text-center border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th class="border p-2 bg-gray-100">イオン</th>
+                                        <th id="anion-Cl" class="border p-2 cursor-pointer">Cl<sup>-</sup></th>
+                                        <th id="anion-SO4" class="border p-2 cursor-pointer">SO<sub>4</sub><sup>2-</sup></th>
+                                        <th id="anion-S" class="border p-2 cursor-pointer">S<sup>2-</sup></th>
+                                        <th id="anion-OH" class="border p-2 cursor-pointer">OH<sup>-</sup></th>
+                                        <th id="anion-CO3" class="border p-2 cursor-pointer">CO<sub>3</sub><sup>2-</sup></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td id="cation-Na" class="border p-2 font-bold cursor-pointer">Na<sup>+</sup></td><td class="border p-2">溶</td><td class="border p-2">溶</td><td class="border p-2">溶</td><td class="border p-2">溶</td><td class="border p-2">溶</td></tr>
+                                    <tr><td id="cation-Ca" class="border p-2 font-bold cursor-pointer">Ca<sup>2+</sup></td><td class="border p-2">溶</td><td class="border p-2">沈(白)</td><td class="border p-2">溶</td><td class="border p-2">難溶</td><td class="border p-2">沈(白)</td></tr>
+                                    <tr><td id="cation-Ag" class="border p-2 font-bold cursor-pointer">Ag<sup>+</sup></td><td class="border p-2">沈(白)</td><td class="border p-2">難溶</td><td class="border p-2">沈(黒)</td><td class="border p-2">沈(褐)</td><td class="border p-2">沈(白)</td></tr>
+                                    <tr><td id="cation-Cu" class="border p-2 font-bold cursor-pointer">Cu<sup>2+</sup></td><td class="border p-2">溶</td><td class="border p-2">溶</td><td class="border p-2">沈(黒)</td><td class="border p-2">沈(青白)</td><td class="border p-2">沈(青白)</td></tr>
+                                    <tr><td id="cation-Fe2" class="border p-2 font-bold cursor-pointer">Fe<sup>2+</sup></td><td class="border p-2">溶</td><td class="border p-2">溶</td><td class="border p-2">沈(黒)</td><td class="border p-2">沈(緑白)</td><td class="border p-2">沈(白)</td></tr>
+                                    <tr><td id="cation-Pb" class="border p-2 font-bold cursor-pointer">Pb<sup>2+</sup></td><td class="border p-2">沈(白)</td><td class="border p-2">沈(白)</td><td class="border p-2">沈(黒)</td><td class="border p-2">沈(白)</td><td class="border p-2">沈(白)</td></tr>
+                                </tbody>
+                             </table>
+                        </div>
+                        <div id="solubility-result" class="bg-teal-50 p-4 rounded-lg h-full border border-teal-200">
+                             <h4 class="font-bold text-teal-800">結果</h4>
+                             <p class="mt-2 text-teal-700">陽イオンと陰イオンを選択してください。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="systematic" class="mb-16 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2 text-[#465a65]">元素で分類！系統的学習法</h2>
+            <p class="text-center text-gray-600 mb-8">周期表の「族」ごとに性質は似ている。グループでまとめて覚えよう。</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                 <button class="element-group-btn p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 border-t-4 border-red-400" data-group="alkali">
+                    <span class="text-2xl">🧪</span>
+                    <h3 class="text-lg font-bold mt-2">1族 アルカリ金属</h3>
+                    <p class="text-sm text-gray-500">Li, Na, K...</p>
+                </button>
+                 <button class="element-group-btn p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 border-t-4 border-orange-400" data-group="alkaline-earth">
+                    <span class="text-2xl">🔬</span>
+                    <h3 class="text-lg font-bold mt-2">2族 アルカリ土類金属</h3>
+                    <p class="text-sm text-gray-500">Be, Mg, Ca...</p>
+                </button>
+                <button class="element-group-btn p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 border-t-4 border-yellow-400" data-group="halogen">
+                    <span class="text-2xl">🔥</span>
+                    <h3 class="text-lg font-bold mt-2">17族 ハロゲン</h3>
+                    <p class="text-sm text-gray-500">F, Cl, Br, I</p>
+                </button>
+                <button class="element-group-btn p-4 bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 border-t-4 border-blue-400" data-group="noble-gas">
+                    <span class="text-2xl">💨</span>
+                    <h3 class="text-lg font-bold mt-2">18族 貴ガス</h3>
+                    <p class="text-sm text-gray-500">He, Ne, Ar...</p>
+                </button>
+            </div>
+            <div id="element-details" class="mt-6 bg-white p-6 rounded-lg shadow-inner min-h-[150px] transition-all duration-500">
+                <p class="text-gray-500">上のボタンから元素グループを選択して、代表的な性質や反応を確認しましょう。</p>
+            </div>
+        </section>
+
+        <section id="practice" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center mb-2 text-[#465a65]">実践クイズ！知識を定着させる</h2>
+            <p class="text-center text-gray-600 mb-8">学んだ知識を使って、反応を予測してみよう。</p>
+            <div class="bg-white p-6 rounded-lg shadow-xl border-t-4 border-[#88a2b1]">
+                <div id="quiz-container">
+                    <p class="text-lg font-semibold mb-2" id="quiz-question"></p>
+                    <div id="quiz-options" class="space-y-3"></div>
+                    <div class="mt-4">
+                        <button id="check-answer-btn" class="bg-[#88a2b1] text-white font-bold py-2 px-4 rounded hover:bg-[#6f8b9a] transition">答え合わせ</button>
+                        <button id="next-question-btn" class="ml-2 bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded hover:bg-gray-300 transition hidden">次の問題へ</button>
+                    </div>
+                    <p id="quiz-feedback" class="mt-3 font-semibold"></p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="mt-16 bg-[#465a65] text-white text-center p-4">
+        <p>© 2025 無機化学反応式 攻略ガイド. 理解を深め、学習を加速させよう。</p>
+    </footer>
+
+    <script>
+        // Tab functionality
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        function showTab(tabId) {
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+                if (button.getAttribute('onclick').includes(tabId)) {
+                    button.classList.add('active');
+                }
+            });
+
+            tabPanes.forEach(pane => {
+                pane.classList.add('hidden');
+                if (pane.id === `${tabId}-content`) {
+                    pane.classList.remove('hidden');
+                }
+            });
+        }
+
+        // Solubility Table
+        const solubilityTable = document.querySelector('.solubility-table');
+        const resultDiv = document.getElementById('solubility-result');
+        let selectedCation = null;
+        let selectedAnion = null;
+        
+        const solubilityData = {
+            'Na': {'Cl': '溶ける', 'SO4': '溶ける', 'S': '溶ける', 'OH': '溶ける', 'CO3': '溶ける'},
+            'Ca': {'Cl': '溶ける', 'SO4': '沈殿(白)', 'S': '溶ける', 'OH': '難溶', 'CO3': '沈殿(白)'},
+            'Ag': {'Cl': '沈殿(白)', 'SO4': '難溶', 'S': '沈殿(黒)', 'OH': '沈殿(褐)', 'CO3': '沈殿(白)'},
+            'Cu': {'Cl': '溶ける', 'SO4': '溶ける', 'S': '沈殿(黒)', 'OH': '沈殿(青白)', 'CO3': '沈殿(青白)'},
+            'Fe2': {'Cl': '溶ける', 'SO4': '溶ける', 'S': '沈殿(黒)', 'OH': '沈殿(緑白)', 'CO3': '沈殿(白)'},
+            'Pb': {'Cl': '沈殿(白)', 'SO4': '沈殿(白)', 'S': '沈殿(黒)', 'OH': '沈殿(白)', 'CO3': '沈殿(白)'},
+        };
+        const cationNames = {'Na': 'Na⁺', 'Ca': 'Ca²⁺', 'Ag': 'Ag⁺', 'Cu': 'Cu²⁺', 'Fe2': 'Fe²⁺', 'Pb': 'Pb²⁺'};
+        const anionNames = {'Cl': 'Cl⁻', 'SO4': 'SO₄²⁻', 'S': 'S²⁻', 'OH': 'OH⁻', 'CO3': 'CO₃²⁻'};
+
+
+        solubilityTable.addEventListener('click', (e) => {
+            const cell = e.target.closest('td, th');
+            if (!cell) return;
+
+            const id = cell.id;
+            if (id.startsWith('cation-')) {
+                if (selectedCation) selectedCation.classList.remove('selected-cation');
+                selectedCation = cell;
+                selectedCation.classList.add('selected-cation');
+            } else if (id.startsWith('anion-')) {
+                 if (selectedAnion) selectedAnion.classList.remove('selected-anion');
+                selectedAnion = cell;
+                selectedAnion.classList.add('selected-anion');
+            }
+            updateSolubilityResult();
+        });
+
+        function updateSolubilityResult() {
+            if (selectedCation && selectedAnion) {
+                const cationKey = selectedCation.id.replace('cation-', '');
+                const anionKey = selectedAnion.id.replace('anion-', '');
+                const result = solubilityData[cationKey][anionKey];
+                
+                let resultText = `<strong>${cationNames[cationKey]} + ${anionNames[anionKey]}</strong><br>`;
+                if(result.includes('沈殿')) {
+                    resultText += `<span class="text-red-600 text-lg font-bold">沈殿します</span> (${result.replace('沈殿(', '').replace(')', '')})`
+                } else if(result.includes('難溶')) {
+                    resultText += `<span class="text-orange-600 text-lg font-bold">わずかに溶けます</span>`
+                } else {
+                    resultText += `<span class="text-green-600 text-lg font-bold">よく溶けます</span>`
+                }
+                resultDiv.innerHTML = resultText;
+            }
+        }
+        
+        // Element Group Details
+        const elementButtons = document.querySelectorAll('.element-group-btn');
+        const detailDiv = document.getElementById('element-details');
+        const elementDetailsData = {
+            alkali: `
+                <h4 class="text-xl font-bold mb-2">アルカリ金属</h4>
+                <p>非常に反応性が高く、水と激しく反応して水素を発生し、強塩基性の水酸化物を生じます。</p>
+                <ul class="list-disc list-inside mt-2 chem-formula"><li>2Na + 2H<sub>2</sub>O → 2NaOH + H<sub>2</sub>↑</li></ul>
+            `,
+            'alkaline-earth': `
+                <h4 class="text-xl font-bold mb-2">アルカリ土類金属</h4>
+                <p>アルカリ金属ほどではないが反応性が高い。炎色反応が特徴的（Ca:橙赤, Sr:紅, Ba:黄緑）。</p>
+                <ul class="list-disc list-inside mt-2 chem-formula"><li>CaCO<sub>3</sub> + 2HCl → CaCl<sub>2</sub> + H<sub>2</sub>O + CO<sub>2</sub>↑</li></ul>
+            `,
+            halogen: `
+                <h4 class="text-xl font-bold mb-2">ハロゲン</h4>
+                <p>酸化力が強く、電子を1つ受け取りやすい（1価の陰イオンになりやすい）。酸化力は F > Cl > Br > I の順。</p>
+                <ul class="list-disc list-inside mt-2 chem-formula"><li>2KI + Cl<sub>2</sub> → 2KCl + I<sub>2</sub></li></ul>
+            `,
+            'noble-gas': `
+                <h4 class="text-xl font-bold mb-2">貴ガス</h4>
+                <p>最も安定な電子配置を持つため、非常に不活性で、通常は他の元素と反応しません。</p>
+                <ul class="list-disc list-inside mt-2"><li>単原子分子として存在。</li></ul>
+            `
+        };
+
+        elementButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                elementButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                const group = button.dataset.group;
+                detailDiv.innerHTML = elementDetailsData[group];
+            });
+        });
+
+        // Quiz
+        const quizData = [
+            { question: '希硫酸に亜鉛板を入れると、何が発生する？', options: ['酸素', '水素', '塩素', '二酸化炭素'], answer: '水素' },
+            { question: '塩化銀 (AgCl) の沈殿の色は？', options: ['黒色', '青白色', '白色', '黄褐色'], answer: '白色' },
+            { question: 'アンモニア水は、酸性・塩基性のどちら？', options: ['酸性', '塩基性'], answer: '塩基性' },
+            { question: '塩素ガス（Cl₂）とヨウ化カリウム（KI）水溶液を反応させると、何が遊離する？', options: ['フッ素 (F₂)', '塩素 (Cl₂)', '臭素 (Br₂)', 'ヨウ素 (I₂)'], answer: 'ヨウ素 (I₂)'},
+        ];
+        
+        let currentQuestionIndex = 0;
+        const questionEl = document.getElementById('quiz-question');
+        const optionsEl = document.getElementById('quiz-options');
+        const feedbackEl = document.getElementById('quiz-feedback');
+        const checkBtn = document.getElementById('check-answer-btn');
+        const nextBtn = document.getElementById('next-question-btn');
+        
+        function loadQuestion() {
+            const q = quizData[currentQuestionIndex];
+            questionEl.textContent = `Q${currentQuestionIndex + 1}: ${q.question}`;
+            optionsEl.innerHTML = '';
+            q.options.forEach(option => {
+                optionsEl.innerHTML += `
+                    <label class="block p-3 rounded-lg border border-gray-200 cursor-pointer quiz-option">
+                        <input type="radio" name="quiz" value="${option}" class="mr-2">
+                        ${option}
+                    </label>
+                `;
+            });
+            feedbackEl.textContent = '';
+            checkBtn.disabled = false;
+            checkBtn.classList.remove('hidden');
+            nextBtn.classList.add('hidden');
+        }
+        
+        checkBtn.addEventListener('click', () => {
+            const selected = document.querySelector('input[name="quiz"]:checked');
+            if (!selected) {
+                feedbackEl.textContent = '答えを選択してください。';
+                feedbackEl.className = 'mt-3 font-semibold text-orange-500';
+                return;
+            }
+            
+            const answer = quizData[currentQuestionIndex].answer;
+            if (selected.value === answer) {
+                feedbackEl.textContent = `正解！ 素晴らしい！`;
+                feedbackEl.className = 'mt-3 font-semibold text-green-600';
+            } else {
+                feedbackEl.textContent = `残念！ 正解は「${answer}」です。`;
+                feedbackEl.className = 'mt-3 font-semibold text-red-600';
+            }
+            checkBtn.disabled = true;
+            checkBtn.classList.add('hidden');
+            nextBtn.classList.remove('hidden');
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                questionEl.textContent = 'クイズ終了！';
+                optionsEl.innerHTML = '<p>お疲れ様でした。何度も挑戦して知識を確実にしましょう！</p>';
+                feedbackEl.textContent = '';
+                nextBtn.textContent = 'もう一度挑戦';
+                currentQuestionIndex = -1; // Next click will restart
+            }
+        });
+        
+        // Initial load
+        window.addEventListener('DOMContentLoaded', () => {
+            showTab('acid-base');
+            loadQuestion();
+        });
+    </script>
+</body>
+</html>
