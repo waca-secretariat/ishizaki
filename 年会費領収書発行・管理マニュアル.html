@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年会費領収書発行・管理マニュアル</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: このアプリケーションは、元のマニュアルの3つの主要なSTEP（領収書発行、メール配信、完了後対応）をトップレベルのナビゲーションとして採用したタスク指向の構造になっています。ユーザーはこれらのタブをクリックすることで、関心のあるプロセスに直接アクセスできます。各STEP内では、手順をインタラクティブなチェックリストとして表示し、ユーザーが特定の手順をクリックすると、関連する視覚的な補助（スプレッドシートやフォルダ構成の図解など）が右側に表示される設計です。この構造を選択した理由は、複雑な業務フローを直感的で管理しやすいセクションに分割し、視覚的なフィードバックを通じて各操作の理解を深めることで、ユーザーの学習効率と操作の正確性を最大化するためです。静的なドキュメントを読むのではなく、能動的に情報を探索する体験を提供します。 -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: 全体の業務フロー -> Goal: プロセス全体の理解 -> Viz/Presentation Method: 3つの主要なステップに分かれたタブ形式のナビゲーション -> Interaction: タブをクリックすると対応する詳細な手順が表示される -> Justification: ユーザーが必要な情報に迅速にアクセスできるようにするため。
+        - Report Info: STEP1-3の各手順 -> Goal: 各操作の具体的な内容を理解 -> Viz/Presentation Method: 左側に手順のインタラクティブリスト、右側にHTML/CSSで作成した視覚的なダイアグラム（スプレッドシートの模擬表示、フォルダ構造図） -> Interaction: リスト内の項目をクリックすると、対応するダイアグラムがハイライトされたり、内容が更新されたりする -> Justification: テキストだけの説明よりも、操作対象を視覚的に示すことで、ユーザーの理解度と記憶定着を向上させるため。例えば、どの列を編集するのか、どのファイルがどこに移動するのかが一目瞭然になる。
+        - Library/Method: Vanilla JSとTailwind CSSのみを使用。チャートライブラリは不要。 -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+        }
+        .tab-active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .tab-inactive {
+            background-color: white;
+            color: #374151;
+            border-color: #d1d5db;
+        }
+        .step-item-active {
+            background-color: #eef2ff;
+            border-left-color: #3b82f6;
+        }
+        .diagram-highlight {
+            background-color: #fef9c3;
+            outline: 2px solid #facc15;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">年会費領収書発行・管理マニュアル</h1>
+            <p class="mt-2 text-slate-600">インタラクティブガイド</p>
+        </header>
+
+        <div id="intro" class="bg-white p-6 rounded-xl shadow-md mb-8">
+            <h2 class="text-xl font-bold text-blue-600 mb-3">はじめに</h2>
+            <p class="text-slate-700">このインタラクティブマニュアルは、年会費領収書の一括発行からメール配信、完了後の処理までの一連の作業をスムーズに進めるためのガイドです。上の「STEP」ボタンをクリックして、各工程の手順を確認してください。各手順をクリックすると、右側に詳細な図解が表示されます。</p>
+        </div>
+
+
+        <div class="w-full bg-white rounded-xl shadow-md p-4 mb-8">
+            <nav id="tabs" class="flex flex-wrap justify-center gap-2 sm:gap-4">
+                <button data-step="1" class="tab-btn flex-1 sm:flex-none text-center px-4 py-3 text-sm sm:text-base font-semibold rounded-lg border transition-colors duration-200">STEP 1: 領収書一括発行</button>
+                <button data-step="2" class="tab-btn flex-1 sm:flex-none text-center px-4 py-3 text-sm sm:text-base font-semibold rounded-lg border transition-colors duration-200">STEP 2: メール個別配信</button>
+                <button data-step="3" class="tab-btn flex-1 sm:flex-none text-center px-4 py-3 text-sm sm:text-base font-semibold rounded-lg border transition-colors duration-200">STEP 3: 完了後対応</button>
+            </nav>
+        </div>
+
+        <main id="app-content">
+            <!-- Content for Step 1 -->
+            <div id="step-1-content" class="step-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <h3 class="text-lg font-bold mb-4">手順リスト</h3>
+                        <ol id="step-1-list" class="space-y-2">
+                            <li data-substep="1" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>① 申請データ確認:</strong> 依頼フォームの申請データ（A〜H列）を確認。</li>
+                            <li data-substep="2" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>② 領収書番号入力:</strong> I列に「NK2025+発行日+連番」で入力。</li>
+                            <li data-substep="3" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>③ 年度入力:</strong> K列に必要な年会費の年を入力。</li>
+                            <li data-substep="4" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>④ 金額入力:</strong> M列に年会費分（6,600円/年）を入力。</li>
+                            <li data-substep="5" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>⑤ 発行日入力:</strong> J列に発行日を入力。</li>
+                            <li data-substep="6" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>⑥ スクリプト実行:</strong> 「フォームから年会費領収書自動発行」をクリック。</li>
+                            <li data-substep="7" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>⑦ 実行ボタンクリック:</strong> Apps Scriptの実行ボタンをクリック。</li>
+                            <li data-substep="8" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>⑧ 自動生成確認:</strong> PDF領収書とK列のURLを確認。</li>
+                            <li data-substep="9" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>⑨ Next Step:</strong> メールでの個別差込配信へ。</li>
+                        </ol>
+                    </div>
+                    <div id="step-1-diagram" class="bg-white p-6 rounded-xl shadow-md flex items-center justify-center min-h-[300px]">
+                        <div class="text-slate-500">左の手順をクリックすると、ここに図解が表示されます。</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content for Step 2 -->
+            <div id="step-2-content" class="step-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <h3 class="text-lg font-bold mb-4">手順リスト</h3>
+                        <ol id="step-2-list" class="space-y-2">
+                            <li data-substep="1" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>① スクリプト選択:</strong> 「IT_1.【スクリプト】個別差込みメール」をクリックし、該当スクリプトを選択。</li>
+                            <li data-substep="2" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>② 実行ボタンクリック:</strong> Apps Scriptの実行ボタンをクリックしてメールを配信。</li>
+                        </ol>
+                    </div>
+                    <div id="step-2-diagram" class="bg-white p-6 rounded-xl shadow-md flex items-center justify-center min-h-[300px]">
+                        <div class="text-slate-500">左の手順をクリックすると、ここに図解が表示されます。</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content for Step 3 -->
+            <div id="step-3-content" class="step-content hidden">
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-md">
+                        <h3 class="text-lg font-bold mb-4">手順リスト</h3>
+                        <ol id="step-3-list" class="space-y-2">
+                            <li data-substep="1" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>① データコピー:</strong> 「フォームの回答 1」のデータを「出力済領収書」シートへコピー。</li>
+                            <li data-substep="2" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>② データ削除:</strong> 「フォームの回答 1」のデータを削除（行ごと削除）。</li>
+                            <li data-substep="3" class="step-item p-3 border-l-4 border-slate-200 cursor-pointer hover:bg-slate-100 rounded-r-md transition"><strong>③ PDFアーカイブ:</strong> 送信済PDFを「archives」フォルダへ移動。</li>
+                        </ol>
+                    </div>
+                    <div id="step-3-diagram" class="bg-white p-6 rounded-xl shadow-md flex items-center justify-center min-h-[300px]">
+                         <div class="text-slate-500">左の手順をクリックすると、ここに図解が表示されます。</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.getElementById('tabs');
+    const tabButtons = tabs.querySelectorAll('.tab-btn');
+    const stepContents = document.querySelectorAll('.step-content');
+    let activeStep = 0;
+
+    function switchTab(step) {
+        if (activeStep === step) return;
+        
+        activeStep = step;
+        
+        tabButtons.forEach(btn => {
+            if (parseInt(btn.dataset.step) === step) {
+                btn.classList.add('tab-active');
+                btn.classList.remove('tab-inactive');
+            } else {
+                btn.classList.remove('tab-active');
+                btn.classList.add('tab-inactive');
+            }
+        });
+
+        stepContents.forEach(content => {
+            if (content.id === `step-${step}-content`) {
+                content.classList.remove('hidden');
+                content.classList.add('fade-in');
+            } else {
+                content.classList.add('hidden');
+            }
+        });
+
+        // Reset diagrams
+        document.getElementById(`step-${step}-diagram`).innerHTML = `<div class="text-slate-500">左の手順をクリックすると、ここに図解が表示されます。</div>`;
+        const activeListItems = document.querySelectorAll(`#step-${step}-list .step-item`);
+        activeListItems.forEach(item => item.classList.remove('step-item-active'));
+    }
+
+    tabs.addEventListener('click', (e) => {
+        if (e.target.matches('.tab-btn')) {
+            const step = parseInt(e.target.dataset.step);
+            switchTab(step);
+        }
+    });
+
+    function createSheetDiagram(highlights = {}) {
+        const columns = ['A..H', 'I', 'J', 'K', 'L', 'M'];
+        let headHtml = '';
+        let bodyHtml = '';
+
+        columns.forEach(col => {
+            headHtml += `<th class="border p-2 font-semibold ${highlights[col] ? 'diagram-highlight' : 'bg-slate-100'}">${col}</th>`;
+            let cellContent = '...';
+            if (col === 'I') cellContent = 'NK2025072201';
+            if (col === 'J') cellContent = '2025/07/22';
+            if (col === 'K') cellContent = '2025・2026';
+            if (col === 'M') cellContent = '13,200';
+            bodyHtml += `<td class="border p-2 ${highlights[col] ? 'diagram-highlight' : ''}">${cellContent}</td>`;
+        });
+        
+        return `
+            <div class="w-full text-center">
+                <h4 class="font-bold mb-2 text-sm">依頼フォーム: 「フォームの回答 1」シート</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse text-xs whitespace-nowrap">
+                        <thead><tr>${headHtml}</tr></thead>
+                        <tbody><tr>${bodyHtml}</tr></tbody>
+                    </table>
+                </div>
+                ${highlights.description ? `<p class="mt-3 text-sm text-slate-600">${highlights.description}</p>` : ''}
+            </div>
+        `;
+    }
+
+    function createFolderDiagram(action, step) {
+        let content;
+        switch (action) {
+            case 'generate':
+                content = `
+                <div class="flex items-center space-x-4">
+                    <div class="text-5xl">⚙️</div>
+                    <div class="text-3xl font-thin text-slate-300">→</div>
+                    <div class="text-center">
+                        <div class="text-4xl">📁</div>
+                        <div class="text-xs font-semibold mt-1">経理_年会費用領収書</div>
+                        <div class="mt-2 p-2 bg-slate-100 rounded">
+                            <div class="text-2xl">📄</div>
+                            <div class="text-xs">領収書.pdf</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="mt-3 text-sm text-slate-600">スクリプトが実行され、PDFが自動生成されます。</p>`;
+                break;
+            case 'archive':
+                content = `
+                <div class="flex items-center space-x-4">
+                    <div class="text-center">
+                        <div class="text-4xl">📁</div>
+                        <div class="text-xs font-semibold mt-1">経理_年会費用領収書</div>
+                        <div class="mt-2 p-2 bg-slate-100 rounded text-slate-400">
+                            <div class="text-2xl">📄</div>
+                            <div class="text-xs">送信済.pdf</div>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-thin text-blue-400">→</div>
+                     <div class="text-center">
+                        <div class="text-4xl">📦</div>
+                        <div class="text-xs font-semibold mt-1">archives</div>
+                    </div>
+                </div>
+                <p class="mt-3 text-sm text-slate-600">送信済みのPDFファイルを移動させます。</p>`;
+                break;
+        }
+        return `<div class="w-full text-center flex flex-col items-center">${content}</div>`;
+    }
+
+    function createScriptDiagram(title) {
+        return `
+            <div class="w-full max-w-sm border rounded-lg shadow-lg bg-slate-50">
+                <div class="bg-slate-200 p-2 text-left text-sm font-bold text-slate-700 rounded-t-lg">Apps Script: ${title}</div>
+                <div class="p-6 text-center">
+                     <button class="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg shadow hover:bg-blue-600 transition">▶ 実行</button>
+                     <p class="mt-4 text-sm text-slate-600">このボタンをクリックしてスクリプトを実行します。</p>
+                </div>
+            </div>
+        `;
+    }
+
+    function createSheetTransferDiagram() {
+        return `
+            <div class="w-full text-center flex flex-col items-center">
+                <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+                     <div class="p-4 border-2 border-red-300 rounded-lg bg-red-50">
+                        <div class="font-bold text-red-700">フォームの回答 1</div>
+                        <div class="text-sm">ここのデータをコピー</div>
+                     </div>
+                     <div class="text-3xl font-thin text-blue-400">→</div>
+                     <div class="p-4 border-2 border-green-300 rounded-lg bg-green-50">
+                        <div class="font-bold text-green-700">出力済領収書</div>
+                        <div class="text-sm">ここに貼り付け</div>
+                     </div>
+                </div>
+                 <p class="mt-4 text-sm text-slate-600">回答データを処理済シートに移動させます。</p>
+            </div>
+        `;
+    }
+
+
+    function updateDiagram(step, subStep) {
+        const diagramContainer = document.getElementById(`step-${step}-diagram`);
+        diagramContainer.classList.remove('fade-in');
+        void diagramContainer.offsetWidth; 
+        diagramContainer.classList.add('fade-in');
+        
+        let diagramHtml = '';
+        if (step === 1) {
+            switch (subStep) {
+                case 1: diagramHtml = createSheetDiagram({'A..H': true, description: 'まず、A列からH列の申請内容を確認します。'}); break;
+                case 2: diagramHtml = createSheetDiagram({I: true, description: 'I列に領収書番号「NK2025+発行日(MMDD)+連番(3桁)」を入力します。'}); break;
+                case 3: diagramHtml = createSheetDiagram({K: true, description: 'K列に領収書が必要な年度を入力します。例：2025・2026'}); break;
+                case 4: diagramHtml = createSheetDiagram({M: true, description: 'M列に合計金額を入力します。例：13,200 (2年分)'}); break;
+                case 5: diagramHtml = createSheetDiagram({J: true, description: 'J列に実際の発行日を入力します。'}); break;
+                case 6: diagramHtml = `<div class="text-center"><p class="font-bold">メニューからスクリプトを選択</p><div class="mt-2 p-3 bg-slate-100 rounded-lg shadow-inner">「拡張機能」 > Apps Script > 「フォームから...」</div></div>`; break;
+                case 7: diagramHtml = createScriptDiagram('フォームから年会費領収書自動発行'); break;
+                case 8: diagramHtml = createFolderDiagram('generate'); break;
+                case 9: diagramHtml = `<div class="text-center text-lg font-bold text-blue-600">次のSTEPへ進んでください →</div>`; break;
+            }
+        } else if (step === 2) {
+            switch (subStep) {
+                case 1: diagramHtml = `<div class="text-center"><p class="font-bold">メール配信スクリプトを選択</p><div class="mt-2 p-3 bg-slate-100 rounded-lg shadow-inner">「IT_1.【スクリプト】...」 > 「★年会費：個別に差込...」</div></div>`; break;
+                case 2: diagramHtml = createScriptDiagram('個別差込みメール'); break;
+            }
+        } else if (step === 3) {
+            switch (subStep) {
+                case 1: diagramHtml = createSheetTransferDiagram(); break;
+                case 2: diagramHtml = `<div class="p-4 border-2 border-dashed border-red-400 rounded-lg bg-red-50 text-center"><p class="font-bold text-red-700">「フォームの回答 1」のデータを削除</p><p class="text-sm">コピー元の行を選択し、削除します（クリアではない）。</p></div>`; break;
+                case 3: diagramHtml = createFolderDiagram('archive'); break;
+            }
+        }
+        diagramContainer.innerHTML = diagramHtml;
+    }
+
+    document.querySelectorAll('.step-content').forEach(content => {
+        content.addEventListener('click', (e) => {
+            const item = e.target.closest('.step-item');
+            if (item) {
+                const step = parseInt(content.id.split('-')[1]);
+                const subStep = parseInt(item.dataset.substep);
+                
+                content.querySelectorAll('.step-item').forEach(i => i.classList.remove('step-item-active'));
+                item.classList.add('step-item-active');
+                
+                updateDiagram(step, subStep);
+            }
+        });
+    });
+
+    // Initialize with Step 1
+    switchTab(1);
+});
+</script>
+</body>
+</html>
