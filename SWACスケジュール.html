@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学習スケジュール</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+
+    <div class="bg-white p-6 md:p-10 rounded-xl shadow-lg w-full max-w-5xl">
+        <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-800 mb-6">学習スケジュール計算アプリ</h1>
+        
+        <div class="mb-6 bg-yellow-100 p-4 rounded-xl border-l-4 border-yellow-400">
+            <label for="startDate" class="block text-lg font-medium text-gray-700 mb-2">講座開始日を入力してください</label>
+            <input type="date" id="startDate" class="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition duration-200 text-gray-800">
+        </div>
+
+        <div id="scheduleTable" class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-blue-600 text-white">
+                        <th class="px-4 py-3 text-sm md:text-base font-semibold rounded-tl-lg">項目</th>
+                        <th class="px-4 py-3 text-sm md:text-base font-semibold">日数 (N+)</th>
+                        <th class="px-4 py-3 text-sm md:text-base font-semibold">完了予定日</th>
+                        <th class="px-4 py-3 text-sm md:text-base font-semibold">お急ぎヴァージョン</th>
+                        <th class="px-4 py-3 text-sm md:text-base font-semibold rounded-tr-lg">備考</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- スケジュール項目はJavaScriptで生成されます -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startDateInput = document.getElementById('startDate');
+            const scheduleTableBody = document.querySelector('#scheduleTable tbody');
+
+            // スケジュールデータ
+            const scheduleData = [
+                { item: "第1部 (1~4章) 受講完了", days: 24, quickDate: "2025/11/13", notes: "各章の理解度テストに全問正解 (何度でも解答可)。" },
+                { item: "第1部 演習課題 提出", days: 24, quickDate: "2025/11/13", notes: "第1部受講完了後に提出可能。50点中35点以上で合格。" },
+                { item: "第2部 (5~10章) 受講完了", days: 45, quickDate: "2025/11/13", notes: "各章の理解度テストに全問正解 (何度でも解答可)。" },
+                { item: "第2部 演習課題 提出", days: 45, quickDate: "2025/11/13", notes: "第2部受講完了後に提出可能。50点中35点以上で合格。" },
+                { item: "ライブ授業1 参加", days: 75, quickDate: "2025/12/13", notes: "(目安) 予約制。第1部・第2部の演習課題提出後、2週間後以降に受講可能。ライブ参加が難しい場合は動画視聴でも可。" },
+                { item: "修了レポート 提出 (1回目)", days: 75, quickDate: "2025/12/13", notes: "(目安: 約1ヶ月) 第1部・第2部の演習課題提出後に提出可能。100点中70点以上で合格。演習課題が合格点未満の場合は、レポート提出前に再提出・合格が必要。" },
+                { item: "ライブ授業2 参加 (合格発表)", days: 90, quickDate: "2026/01/12", notes: "(目安) 予約制。修了レポート提出後、2週間後以降に受講可能。ライブ参加が難しい場合は動画視聴でも可。修了レポートの合否はこの場で発表される可能性があります。" },
+                { item: "修了レポート 2回目提出", days: 120, quickDate: "2026/01/12", notes: "(1回目不合格の場合のみ) 1回目提出から約1ヶ月後が目安。修了レポートが合格点未満だった場合、2回目の提出が必要。上限2回のため、2回目で合格点を突破することを目指す。" },
+            ];
+
+            // 日付をフォーマットする関数
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}/${month}/${day}`;
+            };
+
+            // スケジュールを更新する関数
+            const updateSchedule = () => {
+                const startDateStr = startDateInput.value;
+                if (!startDateStr) {
+                    scheduleTableBody.innerHTML = '';
+                    return;
+                }
+
+                const startDate = new Date(startDateStr);
+                let tableHtml = '';
+
+                scheduleData.forEach(task => {
+                    const scheduledDate = new Date(startDate);
+                    scheduledDate.setDate(startDate.getDate() + task.days);
+                    
+                    tableHtml += `
+                        <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-3 text-sm md:text-base font-medium text-gray-800">${task.item}</td>
+                            <td class="px-4 py-3 text-sm md:text-base text-gray-600">N+${task.days}</td>
+                            <td class="px-4 py-3 text-sm md:text-base text-blue-600 font-semibold">${formatDate(scheduledDate)}</td>
+                            <td class="px-4 py-3 text-sm md:text-base text-gray-500 font-semibold">${task.quickDate}</td>
+                            <td class="px-4 py-3 text-sm md:text-base text-gray-500 max-w-xs">${task.notes}</td>
+                        </tr>
+                    `;
+                });
+                
+                scheduleTableBody.innerHTML = tableHtml;
+            };
+
+            // 日付入力欄の変更を監視
+            startDateInput.addEventListener('change', updateSchedule);
+
+            // 初期表示
+            updateSchedule();
+        });
+    </script>
+</body>
+</html>
