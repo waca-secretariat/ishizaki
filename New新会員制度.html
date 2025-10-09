@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WACA 新会員制度のご案内</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Noto+Sans+JP:wght@100..900&display=swap');
+        
+        /* カスタムカラー設定 */
+        :root {
+            --waca-red: #387D39; /* メインカラー (緑) */
+            --waca-pink-light: #FFCE00; /* アクセントカラー (黄) */
+            --waca-bg: #F8F8F8; /* 背景色 */
+        }
+
+        /* Tailwindのカスタム設定を適用 */
+        .slide {
+            font-family: 'Noto Sans JP', 'Inter', sans-serif;
+            background-color: var(--waca-bg);
+            /* スライド全体を画面いっぱいに表示 */
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .slide.active {
+            opacity: 1;
+            z-index: 10;
+        }
+
+        /* WACAカラーの適用 */
+        .text-waca-red { color: var(--waca-red); }
+        .bg-waca-red { background-color: var(--waca-red); }
+        .border-waca-red { border-color: var(--waca-red); }
+
+        /* スタイリッシュなコンポーネント */
+        .icon-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 6rem;
+            height: 6rem;
+            border-radius: 50%;
+            /* サブカラー（黄）を背景に、メインカラー（緑）をテキスト色に設定 */
+            background-color: var(--waca-pink-light);
+            color: var(--waca-red);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .icon-box.bg-waca-red {
+            /* STEP 1, 2, 3 のアイコンボックスの背景をメインカラー（緑）、テキストを白に上書き */
+            background-color: var(--waca-red) !important;
+            color: white !important;
+        }
+
+        /* 画面サイズに応じたレイアウト調整 */
+        @media (min-width: 768px) {
+            .slide-container {
+                max-width: 900px;
+                max-height: 600px;
+                width: 80vw;
+                height: 80vh;
+                padding: 4rem;
+                border-radius: 1.5rem;
+                box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+                background-color: white;
+            }
+            .icon-box {
+                width: 5rem;
+                height: 5rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen overflow-hidden">
+
+    <!-- スライドコンテナ -->
+    <div id="slide-presentation" class="relative w-full h-full md:w-[900px] md:h-[600px] md:shadow-2xl md:rounded-xl">
+
+        <!-- スライド1: メインビジュアル -->
+        <div class="slide active" data-slide="1">
+            <div class="slide-container text-center flex flex-col justify-center items-center p-8">
+                <!-- WACAロゴの代わりとしてタイトルを強調 -->
+                <div class="mb-4 text-2xl font-bold tracking-widest text-gray-500">
+                    Web Analytics Consultants Association
+                </div>
+                
+                <h1 class="text-6xl md:text-8xl font-extrabold text-waca-red mb-6 animate-pulse">
+                    WACA<span class="text-gray-900">。</span>
+                </h1>
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-8">
+                    新会員制度<span class="border-b-4 border-waca-red">、始動。</span>
+                </h2>
+                <p class="text-xl md:text-2xl text-gray-600 max-w-2xl">
+                    資格の壁を越えて、<br class="md:hidden">すべての「学びたい」人へ、<span class="font-bold text-waca-red">学習と交流の機会</span>を。
+                </p>
+                <!-- 抽象的な背景要素 (WACAカラー) -->
+                <div class="absolute top-0 right-0 w-32 h-32 md:w-48 md:h-48 rounded-bl-full bg-waca-red opacity-10"></div>
+                <div class="absolute bottom-0 left-0 w-32 h-32 md:w-48 md:h-48 rounded-tr-full bg-waca-red opacity-10"></div>
+            </div>
+        </div>
+
+        <!-- スライド2: 新会員制度の3大変更点 -->
+        <div class="slide" data-slide="2">
+            <div class="slide-container flex flex-col justify-center p-8">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-10 text-center border-b-4 border-waca-red pb-2">
+                    新会員制度の<span class="text-waca-red">3大変更点</span>
+                </h2>
+                
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    <!-- 変更点 1: 資格不要 (IDカードアイコンに変更) -->
+                    <div class="flex flex-col items-center">
+                        <div class="icon-box relative">
+                            <!-- IDカード/名刺のアイコン (資格の有無に関わらず誰でも会員になれる=IDを持つ) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-5 0h5m-5 0a2 2 0 110-4h5a2 2 0 110 4m-8 7l1.5 1.5 3-3" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-waca-red">POINT 1: 資格不要！</h3>
+                        <p class="text-sm md:text-base text-gray-600">
+                            資格の有無に関わらず、申込フォームと公式LINE登録で<span class="font-bold text-gray-900">誰でも会員</span>になれます。
+                        </p>
+                    </div>
+
+                    <!-- 変更点 2: 会員専用化 (鍵アイコン) -->
+                    <div class="flex flex-col items-center">
+                        <div class="icon-box">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-waca-red">POINT 2: 会員専用化</h3>
+                        <p class="text-sm md:text-base text-gray-600">
+                            今まで一般公開だったFlashセミナー等、<span class="font-bold text-gray-900">全ての主催セミナー</span>が会員限定となりました。
+                        </p>
+                    </div>
+
+                    <!-- 変更点 3: 初年度無料 -->
+                    <div class="flex flex-col items-center">
+                        <div class="icon-box">
+                            <span class="text-2xl font-bold">¥0</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 text-waca-red">POINT 3: 初年度無料</h3>
+                        <p class="text-sm md:text-base text-gray-600">
+                            年会費 <span class="font-extrabold">6,600</span> 円 (税込) が<span class="font-extrabold text-gray-900">初年度は無料</span>。まずは無料で学びをスタートできます。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド3: 会員のメリット（特典を強調） -->
+        <div class="slide" data-slide="3">
+            <div class="slide-container flex flex-col justify-center p-8">
+                <h2 class="text-3xl md:text-5xl font-extrabold text-gray-900 mb-12 text-center">
+                    WACA会員<span class="text-waca-red">だけの特別メリット</span>
+                </h2>
+                
+                <div class="flex flex-col md:flex-row gap-8">
+                    <!-- メリット 1: 初年度無料（メイン訴求） -->
+                    <div class="w-full md:w-1/2 p-6 bg-white rounded-xl border-4 border-waca-red shadow-lg">
+                        <div class="text-4xl md:text-6xl font-black text-waca-red mb-3">
+                            <span class="text-gray-900">初年度</span> <span class="font-black">0</span> 円！
+                        </div>
+                        <p class="text-xl md:text-2xl font-bold text-gray-800">
+                            セミナー受け放題<span class="text-waca-red">（実質無料）</span>
+                        </p>
+                        <p class="mt-2 text-sm text-gray-600">
+                            翌年以降も年会費 <span class="font-extrabold">6,600</span> 円 (税込) で受け放題です。<br>
+                            <span class="text-red-500">※一部有料セミナー・講座は除く</span>
+                        </p>
+                    </div>
+                    
+                    <!-- メリット 2: コミュニティ/資格不要 -->
+                    <div class="w-full md:w-1/2 p-6 bg-white rounded-xl border border-gray-200 shadow-lg flex flex-col justify-center">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline text-waca-red mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m0 0v-2a6 6 0 0112 0v2M7 20h3M3 10a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8z" />
+                            </svg>
+                            資格取得前から参加可能
+                        </h3>
+                        <p class="text-base text-gray-600">
+                            学びたい意欲があれば、どなたでもWACAコミュニティの**最新情報・交流**に参加できます。
+                        </p>
+                        <hr class="my-4">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline text-waca-red mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            すべての主催講座が会員専用
+                        </h3>
+                        <p class="text-base text-gray-600">
+                            会員限定の<span class="font-bold text-waca-red">質の高い学び</span>に集中してアクセスできます。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド4: 登録の流れ -->
+        <div class="slide" data-slide="4">
+            <div class="slide-container flex flex-col justify-center p-8">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-10 text-center border-b-4 border-waca-red pb-2">
+                    <span class="text-waca-red">3ステップ</span>で簡単登録！
+                </h2>
+                
+                <div class="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
+                    
+                    <!-- STEP 1 -->
+                    <div class="flex flex-col items-center text-center w-full md:w-auto">
+                        <div class="icon-box !bg-waca-red !text-white text-3xl font-extrabold">1</div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1">会員登録</h3>
+                        <p class="text-sm text-gray-600">公式サイトから申込フォーム登録<br>(初年度 <span class="font-bold">0</span> 円)</p>
+                    </div>
+                    
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-waca-red hidden md:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.5 14.5l3-3-3-3" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 12h13" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-waca-red block md:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 17.5l-3-3 3-3" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 7v10" />
+                    </svg>
+
+                    <!-- STEP 2 -->
+                    <div class="flex flex-col items-center text-center w-full md:w-auto">
+                        <div class="icon-box !bg-waca-red !text-white text-3xl font-extrabold">2</div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1">公式LINE登録</h3>
+                        <p class="text-sm text-gray-600">会員専用案内を受け取る<br>(登録必須)</p>
+                    </div>
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-waca-red hidden md:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.5 14.5l3-3-3-3" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 12h13" />
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-waca-red block md:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 17.5l-3-3 3-3" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 7v10" />
+                    </svg>
+
+                    <!-- STEP 3 -->
+                    <div class="flex flex-col items-center text-center w-full md:w-auto">
+                        <div class="icon-box !bg-waca-red !text-white text-3xl font-extrabold">3</div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1">セミナー参加</h3>
+                        <p class="text-sm text-gray-600">Doorkeeperから会員限定講座へ<br>(受け放題 <span class="font-bold">0</span> 円！)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- スライド5: 結び/CTA -->
+        <div class="slide" data-slide="5">
+            <div class="slide-container text-center flex flex-col justify-center items-center p-8">
+                <!-- 抽象的な背景要素 (学びのイメージ) -->
+                <div class="relative mb-10">
+                    <svg class="w-24 h-24 md:w-32 md:h-32 text-waca-red mx-auto opacity-70" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M2 7L12 12L22 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 2V22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M17 14L12 17L7 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-black text-xl">W</span>
+                </div>
+
+                <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+                    “学び続けるコミュニティ”へ。
+                </h2>
+                <p class="text-xl md:text-2xl text-waca-red font-bold mb-8">
+                    あなたも WACA の仲間に！
+                </p>
+
+                <!-- CTAボタン -->
+                <a href="https://www.waca.or.jp/" target="_blank" class="bg-waca-red text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-green-700 transition duration-300 transform hover:scale-105">
+                    詳細・お申し込みはこちら
+                </a>
+
+                <p class="mt-8 text-sm text-gray-500">
+                    2025年10月9日より新制度開始
+                </p>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- ページネーション（スライドナビゲーション） -->
+    <div class="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex space-x-2">
+        <button onclick="changeSlide(-1)" class="p-2 rounded-full bg-gray-900/50 text-white hover:bg-gray-900/80 transition duration-300 shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
+        <div id="slide-indicators" class="flex items-center space-x-2">
+            <!-- インジケーターはJSで挿入されます -->
+        </div>
+        <button onclick="changeSlide(1)" class="p-2 rounded-full bg-gray-900/50 text-white hover:bg-gray-900/80 transition duration-300 shadow-md">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+
+        /**
+         * 指定されたインデックスのスライドを表示します。
+         * @param {number} index - 表示するスライドのインデックス (0始まり)。
+         */
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                // すべてのスライドを非アクティブにし、指定されたスライドをアクティブにします
+                slide.classList.remove('active');
+                if (i === index) {
+                    slide.classList.add('active');
+                }
+            });
+            updateIndicators();
+        }
+
+        /**
+         * スライドを前または次に切り替えます。
+         * @param {number} direction - 1 (次へ) または -1 (前へ)。
+         */
+        function changeSlide(direction) {
+            let newIndex = currentSlide + direction;
+            if (newIndex >= slides.length) {
+                newIndex = 0; // 最後から最初へ
+            } else if (newIndex < 0) {
+                newIndex = slides.length - 1; // 最初から最後へ
+            }
+            currentSlide = newIndex;
+            showSlide(currentSlide);
+        }
+
+        /**
+         * ページネーションインジケーターを更新します。
+         */
+        function updateIndicators() {
+            const indicatorsContainer = document.getElementById('slide-indicators');
+            indicatorsContainer.innerHTML = '';
+            slides.forEach((_, i) => {
+                const indicator = document.createElement('button');
+                indicator.classList.add('w-3', 'h-3', 'rounded-full', 'transition', 'duration-300');
+                if (i === currentSlide) {
+                    indicator.classList.add('bg-waca-red');
+                } else {
+                    indicator.classList.add('bg-gray-400', 'hover:bg-gray-500');
+                }
+                indicator.onclick = () => {
+                    currentSlide = i;
+                    showSlide(currentSlide);
+                };
+                indicatorsContainer.appendChild(indicator);
+            });
+        }
+
+        /**
+         * キーボードの矢印キーでスライドを操作できるようにします。
+         */
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            }
+        });
+
+        // 初期表示
+        window.onload = () => {
+            showSlide(currentSlide);
+        };
+
+    </script>
+</body>
+</html>
