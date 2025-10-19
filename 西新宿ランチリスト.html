@@ -1,653 +1,688 @@
-import React, { useState, useMemo } from 'react';
-import { Search, MapPin, Tag, Users, Heart, Star, PlusCircle, MessageCircle, ThumbsUp } from 'lucide-react';
-
-// --- データ定義 ---
-
-const genres = ['すべて', '和食', '洋食', '中華', 'カフェ', 'ベーカリー', 'そば・うどん', 'カレー', '焼肉', '寿司', '魚定食', 'クレープ', 'その他'];
-
-// 〒160-0023 東京都新宿区西新宿8-14-19 (西新宿STビル) からの徒歩分数を設定
-const initialStores = [
-  { id: 1, name: 'Dynamic Kitchen & Bar 響 西新宿野村ビル店', genre: '和食', address: '新宿区西新宿1-26-2', price: 1600, opening_time: '11:30', distance_min: 10, rating: 4.0, recommendation: '49階からの眺望と籠盛り前菜が魅力の豪華な和食御膳。', url: '#' },
-  { id: 2, name: '割烹栗吉', genre: '和食', address: '新宿区西新宿8-4-16', price: 2000, opening_time: '11:30', distance_min: 3, rating: 4.3, recommendation: 'ホテル内の本格割烹。上品で落ち着いた空間で特別なランチを。', url: '#' },
-  { id: 3, name: '路地ダイニングこめり', genre: '和食', address: '新宿区西新宿8-6-2', price: 1550, opening_time: '11:30', distance_min: 2, rating: 3.8, recommendation: 'お米が美味しいと評判の定食屋。肉厚ポークジンジャーが人気。', url: '#' },
-  { id: 4, name: 'In the garden 135', genre: 'イタリアン', address: '新宿区西新宿8-4-17', price: 1700, opening_time: '11:30', distance_min: 3, rating: 4.1, recommendation: '窯焼きピッツァとパスタ、サラダバー付きのおしゃれなイタリアンランチ。', url: '#' },
-  { id: 5, name: '黒毛和牛焼肉 白か黒', genre: '焼肉', address: '新宿区西新宿8-6-2', price: 1000, opening_time: '11:30', distance_min: 2, rating: 3.9, recommendation: 'A5ランク和牛の焼肉店。ランチはコスパ最強の牛タンカレーが人気。', url: '#' },
-  { id: 6, name: 'Bistro Roven 新宿', genre: '洋食', address: '新宿区西新宿1-26-2 B1', price: 1500, opening_time: '11:30', distance_min: 7, rating: 4.2, recommendation: '自慢のデミグラスソースを使ったロールキャベツやハンバーグが絶品。', url: '#' },
-  { id: 7, name: 'coffee＆tea BBB', genre: 'カフェ', address: '新宿区西新宿8-5-3 2F', price: 1000, opening_time: '09:30', distance_min: 1, rating: 3.7, recommendation: 'ボリューム満点の具沢山サンドイッチとこだわりコーヒーでサクッとランチ。', url: '#' },
-  { id: 8, name: 'DAiSY 西新宿店', genre: 'ベーカリー', address: '新宿区西新宿6-11-3 1F', price: 1100, opening_time: '07:00', distance_min: 5, rating: 3.5, recommendation: '種類豊富な焼きたてパンが魅力。スープセットも人気でテイクアウトにも。', url: '#' },
-  { id: 9, name: '切麦や甚六 西新宿成子', genre: 'うどん', address: '新宿区西新宿8-11-1 B1', price: 1500, opening_time: '11:00', distance_min: 2, rating: 4.2, recommendation: '百名店に選出された本格的な手打ちうどん。コシのある麺と天ぷらが絶品。', url: '#' },
-  { id: 10, name: '手打蕎麦 ふじや', genre: 'そば・うどん', address: '新宿区西新宿7-21-3 1F', price: 2000, opening_time: '11:30', distance_min: 7, rating: 3.9, recommendation: '売り切れ次第終了の本格手打ち蕎麦。落ち着いた和の空間で優雅なランチを。', url: '#' },
-  { id: 11, name: '新宿 鮨 ふくじゅ', genre: '寿司', address: '新宿区西新宿7-20-16 104', price: 1580, opening_time: '11:30', distance_min: 7, rating: 4.0, recommendation: 'ランチ限定の握りセットがお得。本格的なお寿司を気軽に楽しめます。', url: '#' },
-  { id: 12, name: '炭火焼専門食処 白銀屋', genre: '魚定食', address: '新宿区西新宿7-19-7 1F', price: 1000, opening_time: '11:30', distance_min: 8, rating: 4.3, recommendation: '炭火で焼かれた魚定食の百名店。コスパが良く、大満足のランチです。', url: '#' },
-  { id: 13, name: 'HEARTH 新宿 （ハース）', genre: 'クレープ', address: '新宿区西新宿6-12-39 1F', price: 1980, opening_time: '11:30', distance_min: 5, rating: 4.1, recommendation: '本格的な食事系ガレット（蕎麦粉クレープ）が楽しめるおしゃれカフェ。', url: '#' },
-];
-
-const initialReviews = [
-  { id: 1, storeId: 9, user: '西新宿太郎', rating: 5, comment: '甚六のぶっかけうどんは最高！コシが強くて夏にぴったりです。', likes: 15, comments: 2, date: '2025/10/18' },
-  { id: 2, storeId: 12, user: 'OL花子', rating: 5, comment: '白銀屋の鯖の塩焼き、いつ行っても美味しい！ご飯が進みます。', likes: 25, comments: 5, date: '2025/10/17' },
-  { id: 3, storeId: 4, user: 'デザイナーT', rating: 4, comment: 'In the garden 135は雰囲気が良くて打ち合わせにも使える！', likes: 8, comments: 1, date: '2025/10/16' },
-];
-
-// --- ヘルパーコンポーネント ---
-
-const StoreCard = ({ store, onSelectStore, onToggleFavorite }) => (
-  <div
-    className="bg-white p-4 rounded-xl shadow-lg hover:shadow-xl transition duration-300 cursor-pointer border border-gray-100"
-    onClick={() => onSelectStore(store)}
-  >
-    <div className="flex justify-between items-start">
-      <h3 className="text-xl font-bold text-gray-800 truncate">{store.name}</h3>
-      <button
-        onClick={(e) => { e.stopPropagation(); onToggleFavorite(store.id); }}
-        className={`p-2 rounded-full transition ${store.isFavorite ? 'text-red-500 bg-red-100' : 'text-gray-400 hover:text-red-500 hover:bg-gray-50'}`}
-        aria-label="お気に入りに追加"
-      >
-        <Heart fill={store.isFavorite ? 'currentColor' : 'none'} size={20} />
-      </button>
-    </div>
-    <div className="mt-2 text-sm text-gray-600">
-      <p className="flex items-center space-x-1">
-        <Tag size={14} className="text-indigo-400" />
-        <span>{store.genre}</span>
-        <span className="mx-2 text-gray-300">|</span>
-        <MapPin size={14} className="text-green-500" />
-        <span>徒歩{store.distance_min}分</span>
-      </p>
-      <div className="flex items-center mt-1">
-        <Star fill="orange" stroke="orange" size={16} />
-        <span className="ml-1 font-semibold text-orange-600">{store.rating.toFixed(1)}</span>
-        <span className="ml-3 text-xs text-gray-500">予算：〜{store.price.toLocaleString()}円</span>
-      </div>
-      <p className="mt-2 text-gray-700 text-sm italic">{store.recommendation}</p>
-    </div>
-  </div>
-);
-
-const ReviewPostForm = ({ storeId, onAddReview }) => {
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState('');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (comment.trim() && rating > 0) {
-      onAddReview(storeId, rating, comment);
-      setComment('');
-      setRating(5);
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>西新宿ランチサークル | STビル周辺のランチマップ</title>
+  <!-- Tailwind CSS CDNの読み込み -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Font (Inter) の読み込み -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
     }
-  };
+  </style>
+  <!-- React, ReactDOM, Babelの読み込み -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Lucide Iconsの読み込みを追加 -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-gray-50">
+  <div id="root">
+    <!-- Reactコンポーネントがここにマウントされます -->
+    <div class="text-center p-20 text-gray-500">ロード中...</div>
+  </div>
 
-  return (
-    <form onSubmit={handleSubmit} className="p-4 bg-gray-50 rounded-lg shadow-inner mt-4">
-      <h4 className="font-semibold text-lg mb-2 text-gray-700">レビューを投稿</h4>
-      <div className="flex items-center mb-3">
-        <label className="mr-3 text-sm">評価:</label>
-        {[1, 2, 3, 4, 5].map(r => (
-          <Star
-            key={r}
-            size={24}
-            className={`cursor-pointer transition ${r <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-            onClick={() => setRating(r)}
-          />
-        ))}
-      </div>
-      <textarea
-        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-        rows="3"
-        placeholder="お店の感想やおすすめメニューを共有しましょう..."
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        required
-      ></textarea>
-      <button
-        type="submit"
-        className="mt-2 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium"
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+    const { Search, MapPin, Tag, Users, Heart, Star, PlusCircle, MessageCircle, ThumbsUp } = lucide;
+
+    // --- データ定義 ---
+
+    const genres = ['すべて', '和食', '洋食', '中華', 'カフェ', 'ベーカリー', 'そば・うどん', 'カレー', '焼肉', '寿司', '魚定食', 'クレープ', 'その他'];
+
+    // 〒160-0023 東京都新宿区西新宿8-14-19 (西新宿STビル) からの徒歩分数を設定
+    const initialStores = [
+      { id: 1, name: 'Dynamic Kitchen & Bar 響 西新宿野村ビル店', genre: '和食', address: '新宿区西新宿1-26-2', price: 1600, opening_time: '11:30', distance_min: 10, rating: 4.0, recommendation: '49階からの眺望と籠盛り前菜が魅力の豪華な和食御膳。', url: '#' },
+      { id: 2, name: '割烹栗吉', genre: '和食', address: '新宿区西新宿8-4-16', price: 2000, opening_time: '11:30', distance_min: 3, rating: 4.3, recommendation: 'ホテル内の本格割烹。上品で落ち着いた空間で特別なランチを。', url: '#' },
+      { id: 3, name: '路地ダイニングこめり', genre: '和食', address: '新宿区西新宿8-6-2', price: 1550, opening_time: '11:30', distance_min: 2, rating: 3.8, recommendation: 'お米が美味しいと評判の定食屋。肉厚ポークジンジャーが人気。', url: '#' },
+      { id: 4, name: 'In the garden 135', genre: 'イタリアン', address: '新宿区西新宿8-4-17', price: 1700, opening_time: '11:30', distance_min: 3, rating: 4.1, recommendation: '窯焼きピッツァとパスタ、サラダバー付きのおしゃれなイタリアンランチ。', url: '#' },
+      { id: 5, name: '黒毛和牛焼肉 白か黒', genre: '焼肉', address: '新宿区西新宿8-6-2', price: 1000, opening_time: '11:30', distance_min: 2, rating: 3.9, recommendation: 'A5ランク和牛の焼肉店。ランチはコスパ最強の牛タンカレーが人気。', url: '#' },
+      { id: 6, name: 'Bistro Roven 新宿', genre: '洋食', address: '新宿区西新宿1-26-2 B1', price: 1500, opening_time: '11:30', distance_min: 7, rating: 4.2, recommendation: '自慢のデミグラスソースを使ったロールキャベツやハンバーグが絶品。', url: '#' },
+      { id: 7, name: 'coffee＆tea BBB', genre: 'カフェ', address: '新宿区西新宿8-5-3 2F', price: 1000, opening_time: '09:30', distance_min: 1, rating: 3.7, recommendation: 'ボリューム満点の具沢山サンドイッチとこだわりコーヒーでサクッとランチ。', url: '#' },
+      { id: 8, name: 'DAiSY 西新宿店', genre: 'ベーカリー', address: '新宿区西新宿6-11-3 1F', price: 1100, opening_time: '07:00', distance_min: 5, rating: 3.5, recommendation: '種類豊富な焼きたてパンが魅力。スープセットも人気でテイクアウトにも。', url: '#' },
+      { id: 9, name: '切麦や甚六 西新宿成子', genre: 'うどん', address: '新宿区西新宿8-11-1 B1', price: 1500, opening_time: '11:00', distance_min: 2, rating: 4.2, recommendation: '百名店に選出された本格的な手打ちうどん。コシのある麺と天ぷらが絶品。', url: '#' },
+      { id: 10, name: '手打蕎麦 ふじや', genre: 'そば・うどん', address: '新宿区西新宿7-21-3 1F', price: 2000, opening_time: '11:30', distance_min: 7, rating: 3.9, recommendation: '売り切れ次第終了の本格手打ち蕎麦。落ち着いた和の空間で優雅なランチを。', url: '#' },
+      { id: 11, name: '新宿 鮨 ふくじゅ', genre: '寿司', address: '新宿区西新宿7-20-16 104', price: 1580, opening_time: '11:30', distance_min: 7, rating: 4.0, recommendation: 'ランチ限定の握りセットがお得。本格的なお寿司を気軽に楽しめます。', url: '#' },
+      { id: 12, name: '炭火焼専門食処 白銀屋', genre: '魚定食', address: '新宿区西新宿7-19-7 1F', price: 1000, opening_time: '11:30', distance_min: 8, rating: 4.3, recommendation: '炭火で焼かれた魚定食の百名店。コスパが良く、大満足のランチです。', url: '#' },
+      { id: 13, name: 'HEARTH 新宿 （ハース）', genre: 'クレープ', address: '新宿区西新宿6-12-39 1F', price: 1980, opening_time: '11:30', distance_min: 5, rating: 4.1, recommendation: '本格的な食事系ガレット（蕎麦粉クレープ）が楽しめるおしゃれカフェ。', url: '#' },
+    ];
+
+    const initialReviews = [
+      { id: 1, storeId: 9, user: '西新宿太郎', rating: 5, comment: '甚六のぶっかけうどんは最高！コシが強くて夏にぴったりです。', likes: 15, comments: 2, date: '2025/10/18' },
+      { id: 2, storeId: 12, user: 'OL花子', rating: 5, comment: '白銀屋の鯖の塩焼き、いつ行っても美味しい！ご飯が進みます。', likes: 25, comments: 5, date: '2025/10/17' },
+      { id: 3, storeId: 4, user: 'デザイナーT', rating: 4, comment: 'In the garden 135は雰囲気が良くて打ち合わせにも使える！', likes: 8, comments: 1, date: '2025/10/16' },
+    ];
+
+    // --- ヘルパーコンポーネント ---
+
+    const StoreCard = ({ store, onSelectStore, onToggleFavorite }) => (
+      <div
+        className="bg-white p-4 rounded-xl shadow-lg hover:shadow-xl transition duration-300 cursor-pointer border border-gray-100"
+        onClick={() => onSelectStore(store)}
       >
-        投稿する
-      </button>
-    </form>
-  );
-};
+        <div className="flex justify-between items-start">
+          <h3 className="text-xl font-bold text-gray-800 truncate">{store.name}</h3>
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(store.id); }}
+            className={`p-2 rounded-full transition ${store.isFavorite ? 'text-red-500 bg-red-100' : 'text-gray-400 hover:text-red-500 hover:bg-gray-50'}`}
+            aria-label="お気に入りに追加"
+          >
+            <Heart fill={store.isFavorite ? 'currentColor' : 'none'} size={20} />
+          </button>
+        </div>
+        <div className="mt-2 text-sm text-gray-600">
+          <p className="flex items-center space-x-1">
+            <Tag size={14} className="text-indigo-400" />
+            <span>{store.genre}</span>
+            <span className="mx-2 text-gray-300">|</span>
+            <MapPin size={14} className="text-green-500" />
+            <span>徒歩{store.distance_min}分</span>
+          </p>
+          <div className="flex items-center mt-1">
+            <Star fill="orange" stroke="orange" size={16} />
+            <span className="ml-1 font-semibold text-orange-600">{store.rating.toFixed(1)}</span>
+            <span className="ml-3 text-xs text-gray-500">予算：〜{store.price.toLocaleString()}円</span>
+          </div>
+          <p className="mt-2 text-gray-700 text-sm italic">{store.recommendation}</p>
+        </div>
+      </div>
+    );
 
-const StoreAddForm = ({ onAddStore, genres }) => {
-  const [formData, setFormData] = useState({
-    name: '', genre: genres[0], price: 1500, distance_min: 5, recommendation: '',
-    address: '〒160-0023 新宿区西新宿...', opening_time: '11:30'
-  });
+    const ReviewPostForm = ({ storeId, onAddReview }) => {
+      const [rating, setRating] = useState(5);
+      const [comment, setComment] = useState('');
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (comment.trim() && rating > 0) {
+          onAddReview(storeId, rating, comment);
+          setComment('');
+          setRating(5);
+        }
+      };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (formData.name && formData.genre !== 'すべて' && formData.price && formData.distance_min) {
-      onAddStore(formData);
-      // フォームをリセット
-      setFormData({
+      return (
+        <form onSubmit={handleSubmit} className="p-4 bg-gray-50 rounded-lg shadow-inner mt-4">
+          <h4 className="font-semibold text-lg mb-2 text-gray-700">レビューを投稿</h4>
+          <div className="flex items-center mb-3">
+            <label className="mr-3 text-sm">評価:</label>
+            {[1, 2, 3, 4, 5].map(r => (
+              <Star
+                key={r}
+                size={24}
+                className={`cursor-pointer transition ${r <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                onClick={() => setRating(r)}
+              />
+            ))}
+          </div>
+          <textarea
+            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+            rows="3"
+            placeholder="お店の感想やおすすめメニューを共有しましょう..."
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            required
+          ></textarea>
+          <button
+            type="submit"
+            className="mt-2 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium"
+          >
+            投稿する
+          </button>
+        </form>
+      );
+    };
+
+    const StoreAddForm = ({ onAddStore, genres }) => {
+      const [formData, setFormData] = useState({
         name: '', genre: genres[0], price: 1500, distance_min: 5, recommendation: '',
         address: '〒160-0023 新宿区西新宿...', opening_time: '11:30'
       });
+
+      const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (formData.name && formData.genre !== 'すべて' && formData.price && formData.distance_min) {
+          onAddStore(formData);
+          // フォームをリセット
+          setFormData({
+            name: '', genre: genres[0], price: 1500, distance_min: 5, recommendation: '',
+            address: '〒160-0023 新宿区西新宿...', opening_time: '11:30'
+          });
+        }
+      };
+
+      const inputClass = "w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm";
+      const labelClass = "block text-sm font-medium text-gray-700 mt-2";
+
+      return (
+        <div className="max-w-xl mx-auto p-6 bg-white rounded-xl shadow-2xl">
+          <h2 className="text-2xl font-bold text-indigo-700 mb-6 flex items-center"><PlusCircle className="mr-2" /> 新しいお店を登録する</h2>
+          <p className="text-sm text-gray-600 mb-4">西新宿STビル周辺の隠れた名店を共有しましょう！</p>
+          <form onSubmit={handleSubmit}>
+            <label className={labelClass}>店名 <span className="text-red-500">*</span></label>
+            <input type="text" name="name" value={formData.name} onChange={handleChange} required className={inputClass} placeholder="例: 絶品カレー 〇〇店" />
+
+            <label className={labelClass}>ジャンル <span className="text-red-500">*</span></label>
+            <select name="genre" value={formData.genre} onChange={handleChange} required className={inputClass}>
+              {genres.slice(1).map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+
+            <label className={labelClass}>ランチ予算 (円) <span className="text-red-500">*</span></label>
+            <input type="number" name="price" value={formData.price} onChange={handleChange} required min="500" max="2500" className={inputClass} />
+
+            <label className={labelClass}>STビルからの徒歩分数 (目安) <span className="text-red-500">*</span></label>
+            <input type="number" name="distance_min" value={formData.distance_min} onChange={handleChange} required min="1" max="10" className={inputClass} />
+
+            <label className={labelClass}>簡単な住所</label>
+            <input type="text" name="address" value={formData.address} onChange={handleChange} className={inputClass} />
+
+            <label className={labelClass}>開店時間 (ランチ)</label>
+            <input type="text" name="opening_time" value={formData.opening_time} onChange={handleChange} className={inputClass} />
+
+            <label className={labelClass}>おすすめポイント</label>
+            <textarea name="recommendation" value={formData.recommendation} onChange={handleChange} rows="3" className={inputClass} placeholder="例: 限定10食のランチセットが絶品です。"></textarea>
+
+            <button
+              type="submit"
+              className="mt-6 w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-bold shadow-md"
+            >
+              店舗を追加する (承認待ち)
+            </button>
+          </form>
+        </div>
+      );
     }
-  };
 
-  const inputClass = "w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm";
-  const labelClass = "block text-sm font-medium text-gray-700 mt-2";
+    // --- メインアプリコンポーネント ---
 
-  return (
-    <div className="max-w-xl mx-auto p-6 bg-white rounded-xl shadow-2xl">
-      <h2 className="text-2xl font-bold text-indigo-700 mb-6 flex items-center"><PlusCircle className="mr-2" /> 新しいお店を登録する</h2>
-      <p className="text-sm text-gray-600 mb-4">西新宿STビル周辺の隠れた名店を共有しましょう！</p>
-      <form onSubmit={handleSubmit}>
-        <label className={labelClass}>店名 <span className="text-red-500">*</span></label>
-        <input type="text" name="name" value={formData.name} onChange={handleChange} required className={inputClass} placeholder="例: 絶品カレー 〇〇店" />
+    const App = () => {
+      const [stores, setStores] = useState(initialStores.map(s => ({ ...s, isFavorite: false })));
+      const [reviews, setReviews] = useState(initialReviews);
+      const [favorites, setFavorites] = useState([]);
 
-        <label className={labelClass}>ジャンル <span className="text-red-500">*</span></label>
-        <select name="genre" value={formData.genre} onChange={handleChange} required className={inputClass}>
-          {genres.slice(1).map(g => <option key={g} value={g}>{g}</option>)}
-        </select>
+      // フィルタリング設定
+      const [searchQuery, setSearchQuery] = useState('');
+      const [filterGenre, setFilterGenre] = useState('すべて');
+      const [filterBudget, setFilterBudget] = useState(2500);
+      const [filterDistance, setFilterDistance] = useState(10);
 
-        <label className={labelClass}>ランチ予算 (円) <span className="text-red-500">*</span></label>
-        <input type="number" name="price" value={formData.price} onChange={handleChange} required min="500" max="2500" className={inputClass} />
+      const [selectedStore, setSelectedStore] = useState(null);
+      const [activeTab, setActiveTab] = useState('list'); // 'list', 'map', 'mylist', 'community', 'add'
 
-        <label className={labelClass}>STビルからの徒歩分数 (目安) <span className="text-red-500">*</span></label>
-        <input type="number" name="distance_min" value={formData.distance_min} onChange={handleChange} required min="1" max="10" className={inputClass} />
+      // 店舗の絞り込みロジック
+      const filteredStores = useMemo(() => {
+        return stores.filter(store => {
+          // 1. 検索クエリ
+          if (searchQuery && !store.name.toLowerCase().includes(searchQuery.toLowerCase()) && !store.recommendation.toLowerCase().includes(searchQuery.toLowerCase())) {
+            return false;
+          }
+          // 2. ジャンルフィルター
+          if (filterGenre !== 'すべて' && store.genre !== filterGenre) {
+            return false;
+          }
+          // 3. 予算フィルター (2500円以内は前提)
+          if (store.price > filterBudget) {
+            return false;
+          }
+          // 4. 距離フィルター
+          if (store.distance_min > filterDistance) {
+            return false;
+          }
+          // 5. マイリストタブの場合
+          if (activeTab === 'mylist' && !favorites.includes(store.id)) {
+            return false;
+          }
+          return true;
+        }).sort((a, b) => b.rating - a.rating); // 評価順にソート
+      }, [stores, searchQuery, filterGenre, filterBudget, filterDistance, activeTab, favorites]);
 
-        <label className={labelClass}>簡単な住所</label>
-        <input type="text" name="address" value={formData.address} onChange={handleChange} className={inputClass} />
+      // レビューの追加
+      const handleAddReview = (storeId, rating, comment) => {
+        const newReview = {
+          id: reviews.length + 1,
+          storeId,
+          user: '現在のユーザー', // 実際はログインユーザー名
+          rating,
+          comment,
+          likes: 0,
+          comments: 0,
+          date: new Date().toLocaleDateString('ja-JP')
+        };
+        setReviews(prev => [newReview, ...prev]);
 
-        <label className={labelClass}>開店時間 (ランチ)</label>
-        <input type="text" name="opening_time" value={formData.opening_time} onChange={handleChange} className={inputClass} />
+        // 店舗の平均評価を更新（簡易的な計算）
+        setStores(prevStores => prevStores.map(s => {
+          if (s.id === storeId) {
+            const storeReviews = reviews.filter(r => r.storeId === storeId);
+            const totalRating = storeReviews.reduce((sum, r) => sum + r.rating, rating);
+            const newRating = totalRating / (storeReviews.length + 1);
+            return { ...s, rating: newRating };
+          }
+          return s;
+        }));
+      };
 
-        <label className={labelClass}>おすすめポイント</label>
-        <textarea name="recommendation" value={formData.recommendation} onChange={handleChange} rows="3" className={inputClass} placeholder="例: 限定10食のランチセットが絶品です。"></textarea>
+      // お気に入り（マイリスト）のトグル
+      const handleToggleFavorite = (storeId) => {
+        setFavorites(prev => {
+          if (prev.includes(storeId)) {
+            return prev.filter(id => id !== storeId);
+          } else {
+            return [...prev, storeId];
+          }
+        });
+        setStores(prevStores => prevStores.map(s => s.id === storeId ? { ...s, isFavorite: !s.isFavorite } : s));
+      };
 
-        <button
-          type="submit"
-          className="mt-6 w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-bold shadow-md"
-        >
-          店舗を追加する (承認待ち)
-        </button>
-      </form>
-    </div>
-  );
-}
+      // 新しいお店の追加
+      const handleAddStore = (formData) => {
+        const newStore = {
+          id: stores.length + 1,
+          name: formData.name,
+          genre: formData.genre,
+          address: formData.address,
+          price: parseInt(formData.price, 10),
+          opening_time: formData.opening_time,
+          distance_min: parseInt(formData.distance_min, 10),
+          rating: 3.5, // 初期評価
+          recommendation: formData.recommendation,
+          url: '#',
+          isFavorite: false,
+          isNew: true // 新規登録フラグ
+        };
+        setStores(prev => [...prev, newStore]);
+        setActiveTab('list');
+        // alert(`「${newStore.name}」をリストに追加しました！`); // alertは非推奨のためカスタムメッセージは省略
+      };
 
-// --- メインアプリコンポーネント ---
+      // レビューの「いいね」
+      const handleLikeReview = (reviewId) => {
+        setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, likes: r.likes + 1 } : r));
+      };
 
-const App = () => {
-  const [stores, setStores] = useState(initialStores.map(s => ({ ...s, isFavorite: false })));
-  const [reviews, setReviews] = useState(initialReviews);
-  const [favorites, setFavorites] = useState([]);
+      // --- レイアウトとレンダリング ---
 
-  // フィルタリング設定
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterGenre, setFilterGenre] = useState('すべて');
-  const [filterBudget, setFilterBudget] = useState(2500);
-  const [filterDistance, setFilterDistance] = useState(10);
+      const Sidebar = () => (
+        <div className="p-4 space-y-6 bg-white rounded-xl shadow-lg h-full sticky top-4">
+          <h3 className="text-lg font-bold text-gray-800 border-b pb-2 flex items-center">
+            <Search size={20} className="mr-2 text-indigo-500" />
+            ランチを探す
+          </h3>
 
-  const [selectedStore, setSelectedStore] = useState(null);
-  const [activeTab, setActiveTab] = useState('list'); // 'list', 'map', 'mylist', 'community', 'add'
-
-  // 店舗の絞り込みロジック
-  const filteredStores = useMemo(() => {
-    return stores.filter(store => {
-      // 1. 検索クエリ
-      if (searchQuery && !store.name.toLowerCase().includes(searchQuery.toLowerCase()) && !store.recommendation.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
-      }
-      // 2. ジャンルフィルター
-      if (filterGenre !== 'すべて' && store.genre !== filterGenre) {
-        return false;
-      }
-      // 3. 予算フィルター (2500円以内は前提)
-      if (store.price > filterBudget) {
-        return false;
-      }
-      // 4. 距離フィルター
-      if (store.distance_min > filterDistance) {
-        return false;
-      }
-      // 5. マイリストタブの場合
-      if (activeTab === 'mylist' && !favorites.includes(store.id)) {
-        return false;
-      }
-      return true;
-    }).sort((a, b) => b.rating - a.rating); // 評価順にソート
-  }, [stores, searchQuery, filterGenre, filterBudget, filterDistance, activeTab, favorites]);
-
-  // レビューの追加
-  const handleAddReview = (storeId, rating, comment) => {
-    const newReview = {
-      id: reviews.length + 1,
-      storeId,
-      user: '現在のユーザー', // 実際はログインユーザー名
-      rating,
-      comment,
-      likes: 0,
-      comments: 0,
-      date: new Date().toLocaleDateString('ja-JP')
-    };
-    setReviews(prev => [newReview, ...prev]);
-
-    // 店舗の平均評価を更新（簡易的な計算）
-    setStores(prevStores => prevStores.map(s => {
-      if (s.id === storeId) {
-        const storeReviews = reviews.filter(r => r.storeId === storeId);
-        const totalRating = storeReviews.reduce((sum, r) => sum + r.rating, rating);
-        const newRating = totalRating / (storeReviews.length + 1);
-        return { ...s, rating: newRating };
-      }
-      return s;
-    }));
-  };
-
-  // お気に入り（マイリスト）のトグル
-  const handleToggleFavorite = (storeId) => {
-    setFavorites(prev => {
-      if (prev.includes(storeId)) {
-        return prev.filter(id => id !== storeId);
-      } else {
-        return [...prev, storeId];
-      }
-    });
-    setStores(prevStores => prevStores.map(s => s.id === storeId ? { ...s, isFavorite: !s.isFavorite } : s));
-  };
-
-  // 新しいお店の追加
-  const handleAddStore = (formData) => {
-    const newStore = {
-      id: stores.length + 1,
-      name: formData.name,
-      genre: formData.genre,
-      address: formData.address,
-      price: parseInt(formData.price, 10),
-      opening_time: formData.opening_time,
-      distance_min: parseInt(formData.distance_min, 10),
-      rating: 3.5, // 初期評価
-      recommendation: formData.recommendation,
-      url: '#',
-      isFavorite: false,
-      isNew: true // 新規登録フラグ
-    };
-    setStores(prev => [...prev, newStore]);
-    setActiveTab('list');
-    alert(`「${newStore.name}」をリストに追加しました！`);
-  };
-
-  // レビューの「いいね」
-  const handleLikeReview = (reviewId) => {
-    setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, likes: r.likes + 1 } : r));
-  };
-
-  // --- レイアウトとレンダリング ---
-
-  const Sidebar = () => (
-    <div className="p-4 space-y-6 bg-white rounded-xl shadow-lg h-full sticky top-4">
-      <h3 className="text-lg font-bold text-gray-800 border-b pb-2 flex items-center">
-        <Search size={20} className="mr-2 text-indigo-500" />
-        ランチを探す
-      </h3>
-
-      {/* 検索バー */}
-      <input
-        type="text"
-        placeholder="店名やキーワードで検索"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-      />
-
-      <div className="space-y-4">
-        {/* ジャンルフィルター */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">ジャンル</label>
-          <select
-            value={filterGenre}
-            onChange={(e) => setFilterGenre(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-          >
-            {genres.map(g => <option key={g} value={g}>{g}</option>)}
-          </select>
-        </div>
-
-        {/* 予算フィルター */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">予算 (〜{filterBudget.toLocaleString()}円)</label>
+          {/* 検索バー */}
           <input
-            type="range"
-            min="1000"
-            max="2500"
-            step="100"
-            value={filterBudget}
-            onChange={(e) => setFilterBudget(parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-sm accent-indigo-500"
+            type="text"
+            placeholder="店名やキーワードで検索"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm"
           />
-        </div>
 
-        {/* 距離フィルター */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">STビルから徒歩 (〜{filterDistance}分)</label>
-          <input
-            type="range"
-            min="1"
-            max="10"
-            step="1"
-            value={filterDistance}
-            onChange={(e) => setFilterDistance(parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-sm accent-indigo-500"
-          />
-        </div>
-      </div>
-    </div>
-  );
+          <div className="space-y-4">
+            {/* ジャンルフィルター */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ジャンル</label>
+              <select
+                value={filterGenre}
+                onChange={(e) => setFilterGenre(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+              >
+                {genres.map(g => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </div>
 
-  const MainContent = () => {
-    switch (activeTab) {
-      case 'map':
-        return (
-          <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h2 className="text-2xl font-bold text-indigo-700 mb-4 flex items-center">
-              <MapPin className="mr-2" /> ランチマップ（西新宿STビル周辺）
-            </h2>
-            <p className="text-sm text-gray-600 mb-4">
-              西新宿STビル（〒160-0023 新宿区西新宿8-14-19）周辺の地図イメージです。
-              地図上でお店の位置を確認できます。
-            </p>
-            {/* Google Mapsの代替として、シンプルな iframe を使用 */}
-            <iframe
-              title="ランチマップ"
-              src={`https://maps.google.com/maps?q=${encodeURIComponent('西新宿STビル')}&z=15&output=embed`}
-              width="100%"
-              height="400"
-              style={{ border: 0 }}
-              allowFullScreen=""
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="rounded-lg shadow-inner"
-            ></iframe>
-            <p className="mt-4 text-xs text-gray-500">※地図上のピンはおおよその位置を示すもので、正確な店舗位置ではありません。</p>
+            {/* 予算フィルター */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">予算 (〜{filterBudget.toLocaleString()}円)</label>
+              <input
+                type="range"
+                min="1000"
+                max="2500"
+                step="100"
+                value={filterBudget}
+                onChange={(e) => setFilterBudget(parseInt(e.target.value))}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-sm accent-indigo-500"
+              />
+            </div>
+
+            {/* 距離フィルター */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">STビルから徒歩 (〜{filterDistance}分)</label>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                step="1"
+                value={filterDistance}
+                onChange={(e) => setFilterDistance(parseInt(e.target.value))}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-sm accent-indigo-500"
+              />
+            </div>
           </div>
-        );
+        </div>
+      );
 
-      case 'mylist':
-        return (
-          <div>
-            <h2 className="text-2xl font-bold text-indigo-700 mb-6 flex items-center">
-              <Heart className="mr-2" /> マイリスト（行きたいリスト）
-            </h2>
-            {filteredStores.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredStores.map(store => (
-                  <StoreCard key={store.id} store={store} onSelectStore={setSelectedStore} onToggleFavorite={handleToggleFavorite} />
-                ))}
+      const MainContent = () => {
+        switch (activeTab) {
+          case 'map':
+            return (
+              <div className="bg-white p-6 rounded-xl shadow-lg">
+                <h2 className="text-2xl font-bold text-indigo-700 mb-4 flex items-center">
+                  <MapPin className="mr-2" /> ランチマップ（西新宿STビル周辺）
+                </h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  西新宿STビル（〒160-0023 新宿区西新宿8-14-19）周辺の地図イメージです。
+                  地図上でお店の位置を確認できます。
+                </p>
+                {/* Google Mapsの代替として、シンプルな iframe を使用 */}
+                <iframe
+                  title="ランチマップ"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent('西新宿STビル')}&z=15&output=embed`}
+                  width="100%"
+                  height="400"
+                  style={{ border: 0 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="rounded-lg shadow-inner"
+                ></iframe>
+                <p className="mt-4 text-xs text-gray-500">※地図上のピンはおおよその位置を示すもので、正確な店舗位置ではありません。</p>
               </div>
-            ) : (
-              <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-                <p className="text-lg text-gray-600">お気に入りのお店が見つかりません。</p>
-                <p className="text-sm text-gray-500 mt-2">店舗一覧に戻ってお店を探し、「ハート」マークを押してお気に入りに追加してください。</p>
-              </div>
-            )}
-          </div>
-        );
+            );
 
-      case 'community':
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-indigo-700 mb-6 flex items-center">
-              <Users className="mr-2" /> コミュニティ交流（最新レビュー）
-            </h2>
-            <div className="space-y-4">
-              {reviews.map(review => {
-                const store = stores.find(s => s.id === review.storeId);
-                return (
-                  <div key={review.id} className="bg-white p-5 rounded-xl shadow-lg border-l-4 border-indigo-400">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-2">
-                        <Star fill="orange" stroke="orange" size={16} />
-                        <span className="font-bold text-gray-800">{store?.name || '不明な店舗'}</span>
-                      </div>
-                      <span className="text-xs text-gray-500">{review.date}</span>
-                    </div>
-                    <p className="text-lg mt-2 text-gray-900 leading-relaxed">
-                      "{review.comment}"
-                    </p>
-                    <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center text-sm text-gray-500">
-                      <span>投稿者: <span className="font-semibold text-indigo-600">{review.user}</span></span>
-                      <button
-                        onClick={() => handleLikeReview(review.id)}
-                        className="flex items-center space-x-1 hover:text-red-500 transition"
-                        aria-label="いいね"
-                      >
-                        <ThumbsUp size={16} className="text-red-400" />
-                        <span>いいね！ ({review.likes})</span>
-                      </button>
-                    </div>
+          case 'mylist':
+            return (
+              <div>
+                <h2 className="text-2xl font-bold text-indigo-700 mb-6 flex items-center">
+                  <Heart className="mr-2" /> マイリスト（行きたいリスト）
+                </h2>
+                {filteredStores.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredStores.map(store => (
+                      <StoreCard key={store.id} store={store} onSelectStore={setSelectedStore} onToggleFavorite={handleToggleFavorite} />
+                    ))}
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        );
+                ) : (
+                  <div className="bg-white p-6 rounded-xl shadow-lg text-center">
+                    <p className="text-lg text-gray-600">お気に入りのお店が見つかりません。</p>
+                    <p className="text-sm text-gray-500 mt-2">店舗一覧に戻ってお店を探し、「ハート」マークを押してお気に入りに追加してください。</p>
+                  </div>
+                )}
+              </div>
+            );
 
-      case 'add':
-        return <StoreAddForm onAddStore={handleAddStore} genres={genres} />;
-
-      case 'list':
-      default:
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-indigo-700 flex items-center">
-              <Tag className="mr-2" /> 店舗一覧 ({filteredStores.length}件)
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredStores.length > 0 ? (
-                filteredStores.map(store => (
-                  <StoreCard key={store.id} store={store} onSelectStore={setSelectedStore} onToggleFavorite={handleToggleFavorite} />
-                ))
-              ) : (
-                <div className="md:col-span-3 bg-white p-6 rounded-xl shadow-lg text-center">
-                  <p className="text-lg text-gray-600">条件に合うお店が見つかりませんでした。</p>
-                  <p className="text-sm text-gray-500 mt-2">検索条件を緩めてみてください。</p>
+          case 'community':
+            return (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-indigo-700 mb-6 flex items-center">
+                  <Users className="mr-2" /> コミュニティ交流（最新レビュー）
+                </h2>
+                <div className="space-y-4">
+                  {reviews.map(review => {
+                    const store = stores.find(s => s.id === review.storeId);
+                    return (
+                      <div key={review.id} className="bg-white p-5 rounded-xl shadow-lg border-l-4 border-indigo-400">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center space-x-2">
+                            <Star fill="orange" stroke="orange" size={16} />
+                            <span className="font-bold text-gray-800">{store?.name || '不明な店舗'}</span>
+                          </div>
+                          <span className="text-xs text-gray-500">{review.date}</span>
+                        </div>
+                        <p className="text-lg mt-2 text-gray-900 leading-relaxed">
+                          "{review.comment}"
+                        </p>
+                        <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center text-sm text-gray-500">
+                          <span>投稿者: <span className="font-semibold text-indigo-600">{review.user}</span></span>
+                          <button
+                            onClick={() => handleLikeReview(review.id)}
+                            className="flex items-center space-x-1 hover:text-red-500 transition"
+                            aria-label="いいね"
+                          >
+                            <ThumbsUp size={16} className="text-red-400" />
+                            <span>いいね！ ({review.likes})</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
-            </div>
-          </div>
-        );
-    }
-  };
-
-  const StoreDetailModal = () => {
-    if (!selectedStore) return null;
-
-    const storeReviews = reviews.filter(r => r.storeId === selectedStore.id);
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-          <div className="p-8">
-            <div className="flex justify-between items-start border-b pb-4 mb-4">
-              <h2 className="text-3xl font-extrabold text-indigo-800">{selectedStore.name}</h2>
-              <button onClick={() => setSelectedStore(null)} className="text-gray-500 hover:text-gray-800 transition">
-                <PlusCircle size={30} className="rotate-45" />
-              </button>
-            </div>
-
-            {/* 店舗基本情報 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 mb-6">
-              <div>
-                <p className="flex items-center font-medium text-lg">
-                  <Star fill="orange" stroke="orange" size={20} className="mr-1" />
-                  評価: <span className="ml-1 text-orange-600">{selectedStore.rating.toFixed(1)}</span>
-                </p>
-                <p className="mt-2 text-sm"><MapPin size={16} className="inline mr-1 text-green-500" /> 距離: STビルから **徒歩{selectedStore.distance_min}分**</p>
-                <p className="text-sm"><Tag size={16} className="inline mr-1 text-indigo-500" /> ジャンル: **{selectedStore.genre}**</p>
-                <p className="text-sm"><span className="font-semibold">営業時間 (ランチ):</span> {selectedStore.opening_time}〜</p>
               </div>
-              <div>
-                <p className="text-sm"><span className="font-semibold">住所:</span> {selectedStore.address}</p>
-                <p className="text-sm"><span className="font-semibold">ランチ予算:</span> 〜{selectedStore.price.toLocaleString()}円</p>
-                <p className="text-sm">
-                  <a href={selectedStore.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                    詳細サイトを見る &raquo;
-                  </a>
-                </p>
-                <button
-                  onClick={() => handleToggleFavorite(selectedStore.id)}
-                  className={`mt-3 px-4 py-2 rounded-full font-medium transition flex items-center ${selectedStore.isFavorite ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-                >
-                  <Heart size={18} className="mr-1" fill={selectedStore.isFavorite ? 'white' : 'none'} />
-                  {selectedStore.isFavorite ? 'マイリストから削除' : 'マイリストに追加'}
-                </button>
+            );
+
+          case 'add':
+            return <StoreAddForm onAddStore={handleAddStore} genres={genres} />;
+
+          case 'list':
+          default:
+            return (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-indigo-700 flex items-center">
+                  <Tag className="mr-2" /> 店舗一覧 ({filteredStores.length}件)
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredStores.length > 0 ? (
+                    filteredStores.map(store => (
+                      <StoreCard key={store.id} store={store} onSelectStore={setSelectedStore} onToggleFavorite={handleToggleFavorite} />
+                    ))
+                  ) : (
+                    <div className="md:col-span-3 bg-white p-6 rounded-xl shadow-lg text-center">
+                      <p className="text-lg text-gray-600">条件に合うお店が見つかりませんでした。</p>
+                      <p className="text-sm text-gray-500 mt-2">検索条件を緩めてみてください。</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            );
+        }
+      };
 
-            {/* お店の紹介 */}
-            <div className="mb-6 p-4 bg-indigo-50 rounded-lg border-l-4 border-indigo-500">
-              <h3 className="font-bold text-xl text-indigo-800">お店のおすすめポイント</h3>
-              <p className="mt-2 text-gray-700">{selectedStore.recommendation}</p>
-            </div>
+      const StoreDetailModal = () => {
+        if (!selectedStore) return null;
 
-            {/* レビューセクション */}
-            <h3 className="font-bold text-xl text-gray-700 mb-3 flex items-center">
-              <MessageCircle className="mr-2" size={20} /> レビュー ({storeReviews.length}件)
-            </h3>
+        const storeReviews = reviews.filter(r => r.storeId === selectedStore.id);
 
-            <ReviewPostForm storeId={selectedStore.id} onAddReview={handleAddReview} />
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="p-8">
+                <div className="flex justify-between items-start border-b pb-4 mb-4">
+                  <h2 className="text-3xl font-extrabold text-indigo-800">{selectedStore.name}</h2>
+                  <button onClick={() => setSelectedStore(null)} className="text-gray-500 hover:text-gray-800 transition">
+                    <PlusCircle size={30} className="rotate-45" />
+                  </button>
+                </div>
 
-            <div className="mt-6 space-y-4">
-              {storeReviews.length > 0 ? (
-                storeReviews.map(review => (
-                  <div key={review.id} className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
-                    <div className="flex justify-between items-center text-sm">
-                      <div className="font-semibold text-indigo-600">{review.user}</div>
-                      <div className="text-xs text-gray-500">{review.date}</div>
-                    </div>
-                    <div className="flex items-center my-1">
-                      {[1, 2, 3, 4, 5].map(r => (
-                        <Star key={r} size={16} fill={r <= review.rating ? 'gold' : 'none'} stroke={r <= review.rating ? 'gold' : 'gray'} />
-                      ))}
-                    </div>
-                    <p className="text-gray-800 mt-1">{review.comment}</p>
+                {/* 店舗基本情報 */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 mb-6">
+                  <div>
+                    <p className="flex items-center font-medium text-lg">
+                      <Star fill="orange" stroke="orange" size={20} className="mr-1" />
+                      評価: <span className="ml-1 text-orange-600">{selectedStore.rating.toFixed(1)}</span>
+                    </p>
+                    <p className="mt-2 text-sm"><MapPin size={16} className="inline mr-1 text-green-500" /> 距離: STビルから **徒歩{selectedStore.distance_min}分**</p>
+                    <p className="text-sm"><Tag size={16} className="inline mr-1 text-indigo-500" /> ジャンル: **{selectedStore.genre}**</p>
+                    <p className="text-sm"><span className="font-semibold">営業時間 (ランチ):</span> {selectedStore.opening_time}〜</p>
+                  </div>
+                  <div>
+                    <p className="text-sm"><span className="font-semibold">住所:</span> {selectedStore.address}</p>
+                    <p className="text-sm"><span className="font-semibold">ランチ予算:</span> 〜{selectedStore.price.toLocaleString()}円</p>
+                    <p className="text-sm">
+                      <a href={selectedStore.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                        詳細サイトを見る &raquo;
+                      </a>
+                    </p>
                     <button
-                      onClick={() => handleLikeReview(review.id)}
-                      className="mt-2 text-sm text-red-400 hover:text-red-500 flex items-center transition"
+                      onClick={() => handleToggleFavorite(selectedStore.id)}
+                      className={`mt-3 px-4 py-2 rounded-full font-medium transition flex items-center ${selectedStore.isFavorite ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
                     >
-                      <ThumbsUp size={16} className="mr-1" />
-                      いいね！ ({review.likes})
+                      <Heart size={18} className="mr-1" fill={selectedStore.isFavorite ? 'white' : 'none'} />
+                      {selectedStore.isFavorite ? 'マイリストから削除' : 'マイリストに追加'}
                     </button>
                   </div>
-                ))
-              ) : (
-                <p className="text-gray-500 italic">まだレビューがありません。最初のレビューを投稿しましょう！</p>
-              )}
+                </div>
+
+                {/* お店の紹介 */}
+                <div className="mb-6 p-4 bg-indigo-50 rounded-lg border-l-4 border-indigo-500">
+                  <h3 className="font-bold text-xl text-indigo-800">お店のおすすめポイント</h3>
+                  <p className="mt-2 text-gray-700">{selectedStore.recommendation}</p>
+                </div>
+
+                {/* レビューセクション */}
+                <h3 className="font-bold text-xl text-gray-700 mb-3 flex items-center">
+                  <MessageCircle className="mr-2" size={20} /> レビュー ({storeReviews.length}件)
+                </h3>
+
+                <ReviewPostForm storeId={selectedStore.id} onAddReview={handleAddReview} />
+
+                <div className="mt-6 space-y-4">
+                  {storeReviews.length > 0 ? (
+                    storeReviews.map(review => (
+                      <div key={review.id} className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+                        <div className="flex justify-between items-center text-sm">
+                          <div className="font-semibold text-indigo-600">{review.user}</div>
+                          <div className="text-xs text-gray-500">{review.date}</div>
+                        </div>
+                        <div className="flex items-center my-1">
+                          {[1, 2, 3, 4, 5].map(r => (
+                            <Star key={r} size={16} fill={r <= review.rating ? 'gold' : 'none'} stroke={r <= review.rating ? 'gold' : 'gray'} />
+                          ))}
+                        </div>
+                        <p className="text-gray-800 mt-1">{review.comment}</p>
+                        <button
+                          onClick={() => handleLikeReview(review.id)}
+                          className="mt-2 text-sm text-red-400 hover:text-red-500 flex items-center transition"
+                        >
+                          <ThumbsUp size={16} className="mr-1" />
+                          いいね！ ({review.likes})
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 italic">まだレビューがありません。最初のレビューを投稿しましょう！</p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    );
-  };
+        );
+      };
 
-  const NavItem = ({ tab, icon, label }) => {
-    const isActive = activeTab === tab;
-    return (
-      <button
-        className={`flex items-center justify-center p-3 md:px-4 md:py-2 rounded-lg transition font-semibold text-sm md:text-base w-full ${isActive ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100'}`}
-        onClick={() => {
-          setActiveTab(tab);
-          setSelectedStore(null); // 詳細モーダルを閉じる
-        }}
-      >
-        {icon}
-        <span className="ml-2 hidden md:inline">{label}</span>
-      </button>
-    );
-  };
+      const NavItem = ({ tab, icon, label }) => {
+        const isActive = activeTab === tab;
+        return (
+          <button
+            className={`flex items-center justify-center p-3 md:px-4 md:py-2 rounded-lg transition font-semibold text-sm md:text-base w-full ${isActive ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-700 hover:bg-gray-100'}`}
+            onClick={() => {
+              setActiveTab(tab);
+              setSelectedStore(null); // 詳細モーダルを閉じる
+            }}
+          >
+            {icon}
+            <span className="ml-2 hidden md:inline">{label}</span>
+          </button>
+        );
+      };
 
-  return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      <header className="bg-indigo-700 shadow-xl sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
-          <h1 className="text-3xl font-extrabold text-white">西新宿ランチサークル</h1>
-          <p className="text-sm text-indigo-200 mt-1 md:mt-0">STビル発！徒歩10分以内のおすすめランチ情報</p>
-        </div>
-        
-        {/* ナビゲーションバー (モバイルフレンドリー) */}
-        <nav className="bg-white shadow-inner py-2 px-4">
-          <div className="max-w-6xl mx-auto flex justify-between space-x-2 md:space-x-4">
-            <NavItem tab="list" label="店舗一覧" icon={<Tag size={20} />} />
-            <NavItem tab="map" label="ランチマップ" icon={<MapPin size={20} />} />
-            <NavItem tab="mylist" label="マイリスト" icon={<Heart size={20} />} />
-            <NavItem tab="community" label="コミュニティ" icon={<Users size={20} />} />
-            <NavItem tab="add" label="お店を追加" icon={<PlusCircle size={20} />} />
-          </div>
-        </nav>
-      </header>
+      return (
+        <div className="min-h-screen bg-gray-50 font-sans">
+          <header className="bg-indigo-700 shadow-xl sticky top-0 z-40">
+            <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+              <h1 className="text-3xl font-extrabold text-white">西新宿ランチサークル</h1>
+              <p className="text-sm text-indigo-200 mt-1 md:mt-0">STビル発！徒歩10分以内のおすすめランチ情報</p>
+            </div>
+            
+            {/* ナビゲーションバー (モバイルフレンドリー) */}
+            <nav className="bg-white shadow-inner py-2 px-4">
+              <div className="max-w-6xl mx-auto flex justify-between space-x-2 md:space-x-4">
+                <NavItem tab="list" label="店舗一覧" icon={<Tag size={20} />} />
+                <NavItem tab="map" label="ランチマップ" icon={<MapPin size={20} />} />
+                <NavItem tab="mylist" label="マイリスト" icon={<Heart size={20} />} />
+                <NavItem tab="community" label="コミュニティ" icon={<Users size={20} />} />
+                <NavItem tab="add" label="お店を追加" icon={<PlusCircle size={20} />} />
+              </div>
+            </nav>
+          </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* サイドバー (フィルター) - PCでのみ表示 */}
-          <div className="hidden lg:block lg:col-span-1">
-            <Sidebar />
-          </div>
+          <main className="max-w-6xl mx-auto px-4 py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+              {/* サイドバー (フィルター) - PCでのみ表示 */}
+              <div className="hidden lg:block lg:col-span-1">
+                <Sidebar />
+              </div>
 
-          {/* メインコンテンツ - モバイルではサイドバーの要素が隠れるため、MainContentで統合して表示 */}
-          <div className="col-span-1 lg:col-span-3">
-            {/* モバイルでのみ表示する検索・フィルター */}
-            <div className="lg:hidden mb-6">
-                <h3 className="text-xl font-bold text-gray-800 border-b pb-2 flex items-center mb-4">
-                    <Search size={20} className="mr-2 text-indigo-500" />
-                    ランチを探す
-                </h3>
-                <div className="space-y-4 p-4 bg-white rounded-xl shadow-lg">
-                    <input
-                        type="text"
-                        placeholder="店名やキーワードで検索"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                    />
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">ジャンル</label>
-                        <select
-                            value={filterGenre}
-                            onChange={(e) => setFilterGenre(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                        >
-                            {genres.map(g => <option key={g} value={g}>{g}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">予算 (〜{filterBudget.toLocaleString()}円)</label>
+              {/* メインコンテンツ - モバイルではサイドバーの要素が隠れるため、MainContentで統合して表示 */}
+              <div className="col-span-1 lg:col-span-3">
+                {/* モバイルでのみ表示する検索・フィルター */}
+                <div className="lg:hidden mb-6">
+                    <h3 className="text-xl font-bold text-gray-800 border-b pb-2 flex items-center mb-4">
+                        <Search size={20} className="mr-2 text-indigo-500" />
+                        ランチを探す
+                    </h3>
+                    <div className="space-y-4 p-4 bg-white rounded-xl shadow-lg">
                         <input
-                            type="range"
-                            min="1000"
-                            max="2500"
-                            step="100"
-                            value={filterBudget}
-                            onChange={(e) => setFilterBudget(parseInt(e.target.value))}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-sm accent-indigo-500"
+                            type="text"
+                            placeholder="店名やキーワードで検索"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                         />
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">ジャンル</label>
+                            <select
+                                value={filterGenre}
+                                onChange={(e) => setFilterGenre(e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+                            >
+                                {genres.map(g => <option key={g} value={g}>{g}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">予算 (〜{filterBudget.toLocaleString()}円)</label>
+                            <input
+                                type="range"
+                                min="1000"
+                                max="2500"
+                                step="100"
+                                value={filterBudget}
+                                onChange={(e) => setFilterBudget(parseInt(e.target.value))}
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-sm accent-indigo-500"
+                            />
+                        </div>
                     </div>
                 </div>
+
+                {/* メインコンテンツエリア */}
+                {MainContent()}
+              </div>
             </div>
+          </main>
 
-            {/* メインコンテンツエリア */}
-            {MainContent()}
-          </div>
+          {/* 店舗詳細モーダル */}
+          <StoreDetailModal />
+
+          <footer className="bg-gray-800 text-white p-4 mt-8">
+            <div className="max-w-6xl mx-auto text-center text-sm">
+              &copy; 2025 西新宿ランチサークル. All rights reserved. | 協力: STビル周辺ワーカー
+            </div>
+          </footer>
         </div>
-      </main>
+      );
+    };
 
-      {/* 店舗詳細モーダル */}
-      <StoreDetailModal />
-
-      <footer className="bg-gray-800 text-white p-4 mt-8">
-        <div className="max-w-6xl mx-auto text-center text-sm">
-          &copy; 2025 西新宿ランチサークル. All rights reserved. | 協力: STビル周辺ワーカー
-        </div>
-      </footer>
-    </div>
-  );
-};
-
-export default App;
+    // Reactアプリケーションのレンダリング
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+  </script>
+</body>
+</html>
